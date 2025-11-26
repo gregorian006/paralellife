@@ -1,8 +1,8 @@
-// src/pages/register.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function Register() {
+// [PERUBAHAN 1]: Terima props 'onLogin' dari App.jsx
+export default function Register({ onLogin }) {
   const navigate = useNavigate();
   
   // State untuk menangkap input user
@@ -42,7 +42,7 @@ export default function Register() {
         return;
       }
 
-      // 3. Masukkan user baru ke Array
+      // 3. Masukkan user baru ke Array Database
       const newUser = {
         id: Date.now(), // Bikin ID unik pakai timestamp
         name: formData.name,
@@ -52,13 +52,29 @@ export default function Register() {
 
       usersDb.push(newUser);
 
-      // 4. Simpan balik ke LocalStorage
+      // 4. Simpan balik Database ke LocalStorage
       localStorage.setItem("users_db", JSON.stringify(usersDb));
 
-      console.log("Database Updated:", usersDb); // Buat debugging di console browser
+      // [PERUBAHAN 2]: AUTO LOGIN LOGIC
+      // Buat sesi aktif user (sama persis kayak di login.jsx)
+      const sessionData = {
+          ...newUser,
+          loginTime: new Date().toISOString()
+      };
       
-      // Redirect ke halaman Login
-      navigate("/login"); 
+      // Simpan sesi login
+      localStorage.setItem("user", JSON.stringify(sessionData));
+
+      // [PERUBAHAN 3]: Update status di App.jsx biar navbar berubah
+      if (onLogin) {
+        onLogin();
+      }
+
+      console.log("Register Berhasil & Auto Login:", sessionData);
+      
+      // [PERUBAHAN 4]: Langsung pindah ke ChatPage (bukan ke Login lagi)
+      navigate("/chat"); 
+
     }, 1000);
   };
 
@@ -82,7 +98,7 @@ export default function Register() {
             <label className="text-gray-300 text-sm">Nama Lengkap</label>
             <input
               type="text"
-              name="name" // Penting untuk handleChange
+              name="name"
               required
               value={formData.name}
               onChange={handleChange}
@@ -120,9 +136,9 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-pink-500/30 transition-all duration-300 hover:-translate-y-1"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-pink-500/30 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
           >
-            {loading ? "Menyimpan Data..." : "Daftar"}
+            {loading ? "Menyimpan Data..." : "Daftar Sekarang"}
           </button>
         </form>
 
