@@ -1,8 +1,11 @@
 // src/pages/login.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
+import { authAPI } from "../services/api";
 
-// Terima prop onLogin biar App.jsx tau kalo user dah login (Opsional tapi recommended)
+// Terima prop onLogin biar App.jsx tau kalo user dah login
 function Login({ onLogin }) {
   const navigate = useNavigate();
 
@@ -13,55 +16,80 @@ function Login({ onLogin }) {
 
   // Jika sudah login → tidak boleh buka halaman login
   useEffect(() => {
-    const user = localStorage.getItem("user"); // Cek session aktif
-    if (user) navigate("/chat"); // Redirect ke Chat, bukan AI (sesuai request sebelumnya)
+    const token = localStorage.getItem("token");
+    if (token) navigate("/chat");
   }, [navigate]);
 
-  const handleLogin = (e) => {
+  // ================== LOGIN MANUAL ==================
+  const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setLoading(true);
 
     if (!email || !password) {
-      setErrorMsg("Email dan password wajib diisi, Lek.");
+      setErrorMsg("Email dan password wajib diisi!");
       setLoading(false);
       return;
     }
 
-    setTimeout(() => {
-      // 1. Ambil database user
-      const usersDb = JSON.parse(localStorage.getItem("users_db") || "[]");
+    try {
+      // Panggil API backend
+      const response = await authAPI.login(email, password);
 
-      // 2. LOGIKA PENCARIAN (Authentication)
-      // Cari user yang email DAN password-nya cocok
-      const validUser = usersDb.find(
-        (u) => u.email === email && u.password === password
-      );
+      if (response.status === "success") {
+        // Simpan token dan data user
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      if (validUser) {
-        // --- SUKSES LOGIN ---
-        
-        // Simpan sesi aktif ke localStorage
-        // Kita simpan objek lengkap biar nama user bisa dipanggil nanti
-        const sessionData = {
-            ...validUser,
-            loginTime: new Date().toISOString()
-        };
-        
-        localStorage.setItem("user", JSON.stringify(sessionData));
-
-        // Trigger update state di App.jsx (kalau props onLogin dipasang)
+        // Update state di App.jsx
         if (onLogin) onLogin();
 
-        // Redirect ke halaman Chat
+        // Redirect ke chat
         navigate("/chat");
-      } else {
-        // --- GAGAL LOGIN ---
-        setErrorMsg("Email atau Password salah! Cek lagi database-mu Lek.");
       }
-      
+    } catch (error) {
+      console.error("Login Error:", error);
+      const message = error.response?.data?.message || "Terjadi kesalahan. Coba lagi nanti.";
+      setErrorMsg(message);
+    } finally {
       setLoading(false);
-    }, 1000); // Simulasi loading 1 detik
+    }
+  };
+
+  // ================== LOGIN GOOGLE ==================
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      // Decode token dari Google untuk ambil data user
+      const decoded = jwtDecode(credentialResponse.credential);
+      
+      // Kirim data ke backend
+      const response = await authAPI.googleLogin({
+        googleId: decoded.sub,
+        email: decoded.email,
+        name: decoded.name,
+        avatar_url: decoded.picture
+      });
+
+      if (response.status === "success") {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        if (onLogin) onLogin();
+        navigate("/chat");
+      }
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      setErrorMsg("Gagal login dengan Google. Coba lagi nanti.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setErrorMsg("Login Google gagal. Pastikan popup tidak diblokir.");
   };
 
   return (
@@ -75,6 +103,26 @@ function Login({ onLogin }) {
         <p className="text-center text-gray-300 mb-8">
           Masuk untuk melanjutkan eksplorasi kehidupan paralel Anda.
         </p>
+
+        {/* GOOGLE LOGIN BUTTON */}
+        <div className="flex justify-center mb-6">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            theme="filled_black"
+            shape="pill"
+            size="large"
+            text="signin_with"
+            locale="id"
+          />
+        </div>
+
+        {/* DIVIDER */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1 h-px bg-white/20"></div>
+          <span className="text-gray-400 text-sm">atau</span>
+          <div className="flex-1 h-px bg-white/20"></div>
+        </div>
 
         <form onSubmit={handleLogin} className="space-y-5">
 

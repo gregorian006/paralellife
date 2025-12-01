@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
+import { authAPI } from "../services/api";
 
-// [PERUBAHAN 1]: Terima props 'onLogin' dari App.jsx
 export default function Register({ onLogin }) {
   const navigate = useNavigate();
   
@@ -23,59 +25,85 @@ export default function Register({ onLogin }) {
     });
   };
 
-  const handleRegister = (e) => {
+  // ================== REGISTER MANUAL ==================
+  const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    // Simulasi delay biar kayak connect server beneran
-    setTimeout(() => {
-      // 1. Ambil database lama (kalau ada)
-      const usersDb = JSON.parse(localStorage.getItem("users_db") || "[]");
+    // Validasi
+    if (!formData.name || !formData.email || !formData.password) {
+      setError("Semua field wajib diisi!");
+      setLoading(false);
+      return;
+    }
 
-      // 2. Cek apakah email sudah ada (Validasi Unik)
-      const existingUser = usersDb.find(user => user.email === formData.email);
-      
-      if (existingUser) {
-        setError("Email sudah terdaftar, Lek! Login aja langsung.");
-        setLoading(false);
-        return;
+    if (formData.password.length < 6) {
+      setError("Password minimal 6 karakter!");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Panggil API backend
+      const response = await authAPI.register(
+        formData.name,
+        formData.email,
+        formData.password
+      );
+
+      if (response.status === "success") {
+        // Simpan token dan data user
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        // Update state di App.jsx
+        if (onLogin) onLogin();
+
+        // Redirect ke chat
+        navigate("/chat");
       }
+    } catch (error) {
+      console.error("Register Error:", error);
+      const message = error.response?.data?.message || "Terjadi kesalahan. Coba lagi nanti.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // 3. Masukkan user baru ke Array Database
-      const newUser = {
-        id: Date.now(), // Bikin ID unik pakai timestamp
-        name: formData.name,
-        email: formData.email,
-        password: formData.password // Ingat Lek, di real world ini harus di-hash!
-      };
+  // ================== REGISTER VIA GOOGLE ==================
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError("");
 
-      usersDb.push(newUser);
-
-      // 4. Simpan balik Database ke LocalStorage
-      localStorage.setItem("users_db", JSON.stringify(usersDb));
-
-      // [PERUBAHAN 2]: AUTO LOGIN LOGIC
-      // Buat sesi aktif user (sama persis kayak di login.jsx)
-      const sessionData = {
-          ...newUser,
-          loginTime: new Date().toISOString()
-      };
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
       
-      // Simpan sesi login
-      localStorage.setItem("user", JSON.stringify(sessionData));
+      const response = await authAPI.googleLogin({
+        googleId: decoded.sub,
+        email: decoded.email,
+        name: decoded.name,
+        avatar_url: decoded.picture
+      });
 
-      // [PERUBAHAN 3]: Update status di App.jsx biar navbar berubah
-      if (onLogin) {
-        onLogin();
+      if (response.status === "success") {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        if (onLogin) onLogin();
+        navigate("/chat");
       }
+    } catch (error) {
+      console.error("Google Register Error:", error);
+      setError("Gagal daftar dengan Google. Coba lagi nanti.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      console.log("Register Berhasil & Auto Login:", sessionData);
-      
-      // [PERUBAHAN 4]: Langsung pindah ke ChatPage (bukan ke Login lagi)
-      navigate("/chat"); 
-
-    }, 1000);
+  const handleGoogleError = () => {
+    setError("Pendaftaran Google gagal. Pastikan popup tidak diblokir.");
   };
 
   return (
@@ -85,6 +113,26 @@ export default function Register({ onLogin }) {
         <h2 className="text-3xl font-bold text-white mb-6 text-center">
           Daftar Akun Baru
         </h2>
+
+        {/* GOOGLE REGISTER BUTTON */}
+        <div className="flex justify-center mb-6">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            theme="filled_black"
+            shape="pill"
+            size="large"
+            text="signup_with"
+            locale="id"
+          />
+        </div>
+
+        {/* DIVIDER */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1 h-px bg-white/20"></div>
+          <span className="text-gray-400 text-sm">atau</span>
+          <div className="flex-1 h-px bg-white/20"></div>
+        </div>
 
         {/* Tampilkan Error jika ada */}
         {error && (
@@ -129,14 +177,14 @@ export default function Register({ onLogin }) {
               value={formData.password}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="••••••••"
+              placeholder="Minimal 6 karakter"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-pink-500/30 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-pink-500/30 transition-all duration-300 hover:-translate-y-1 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? "Menyimpan Data..." : "Daftar Sekarang"}
           </button>

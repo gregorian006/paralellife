@@ -2,12 +2,11 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim"; 
 import { useNavigate } from 'react-router-dom';
+import { Sparkles, MessageCircleHeart, Shield, Zap, Brain, Clock } from 'lucide-react';
 
-// PENTING: Jangan lupa import Navbar-nya ya Lek!
-// Sesuaikan path '../components/Navbar' dengan lokasi file Navbar kamu sebenarnya.
 import Navbar from '../components/Navbar'; 
 
-// --- 1. HERO SECTION (Diupdate menerima prop 'onStart') ---
+// --- 1. HERO SECTION ---
 function HeroSection({ onStart }) {
   const [init, setInit] = useState(false);
 
@@ -29,25 +28,25 @@ function HeroSection({ onStart }) {
           onHover: { enable: true, mode: "repulse" },
         },
         modes: {
-          push: { quantity: 4 },
-          repulse: { distance: 200, duration: 0.4 },
+          push: { quantity: 2 },
+          repulse: { distance: 150, duration: 0.4 },
         },
       },
       particles: {
-        color: { value: "#ffffff" },
+        color: { value: ["#a855f7", "#ec4899", "#6366f1"] },
         links: { enable: false },
         move: {
           direction: "none",
           enable: true,
-          outModes: { default: "bounce" },
+          outModes: { default: "out" },
           random: true,
-          speed: 1,
+          speed: 0.8,
           straight: false,
         },
-        number: { density: { enable: true, area: 800 }, value: 100 },
-        opacity: { value: 0.5 },
+        number: { density: { enable: true, area: 1000 }, value: 60 },
+        opacity: { value: { min: 0.3, max: 0.7 } },
         shape: { type: "circle" },
-        size: { value: { min: 1, max: 3 } },
+        size: { value: { min: 1, max: 4 } },
       },
       detectRetina: true,
     }),
@@ -55,141 +54,194 @@ function HeroSection({ onStart }) {
   );
 
   return (
-    <div className="relative h-screen flex flex-col items-center justify-center p-8 overflow-hidden">
+    <div className="relative min-h-screen flex flex-col items-center justify-center px-6 py-20 overflow-hidden">
+      {/* Animated Background Gradients */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-600/30 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-pink-600/20 rounded-full blur-[100px] animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[150px]"></div>
+      </div>
+      
       {init && (
         <Particles id="tsparticles" options={particlesOptions} className="absolute inset-0 z-0" />
       )}
-      <div className="relative z-10 text-center max-w-3xl space-y-6 mt-16"> 
-        {/* Note: Saya tambah mt-16 biar gak ketutupan Navbar */}
+      
+      <div className="relative z-10 text-center max-w-4xl space-y-8 mt-16">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+          </span>
+          <span className="text-sm text-gray-300">Powered by Advanced AI</span>
+        </div>
         
-        <span className="inline-block px-4 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-sm font-medium text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-          Powered by Advanced AI
-        </span>
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 drop-shadow-sm">
-          Paralel Life
-          <span className="block text-2xl md:text-4xl font-semibold mt-4 text-white">Jelajahi Kehidupan Paralel Anda</span>
+        {/* Main Title */}
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight">
+          <span className="bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
+            Paralel
+          </span>
+          <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-purple-400 bg-clip-text text-transparent"> Life</span>
         </h1>
-        <p className="text-lg text-gray-300 leading-relaxed max-w-2xl mx-auto">
-          Pernahkah Anda bertanya-tanya "bagaimana jika saya memilih jalan yang berbeda?" Dengan teknologi AI canggih, kami membantu Anda menjelajahi kemungkinan hidup yang tidak Anda ambil.
+        
+        {/* Subtitle */}
+        <p className="text-xl md:text-2xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
+          Jelajahi kemungkinan kehidupan yang tidak Anda ambil.
+          <span className="block mt-2 text-gray-400">Temukan jawaban dari "Bagaimana jika..."</span>
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-          
-          {/* TOMBOL UPDATE: Panggil onStart saat diklik */}
+        
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
           <button 
             onClick={onStart}
-            className="px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold shadow-lg hover:from-purple-700 hover:to-pink-600 hover:shadow-purple-500/30 transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-105"
+            className="group relative px-8 py-4 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-2xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            Mulai Eksplorasi
+            <span className="flex items-center justify-center gap-2">
+              <Sparkles size={20} />
+              Mulai Eksplorasi
+            </span>
           </button>
 
-          <button className="px-8 py-3 rounded-full border border-gray-500 text-gray-300 font-semibold hover:bg-white/10 hover:border-white hover:text-white transition-all duration-300 backdrop-blur-sm">
+          <button className="px-8 py-4 rounded-full border border-white/20 text-gray-300 font-semibold hover:bg-white/5 hover:border-white/40 hover:text-white transition-all duration-300 backdrop-blur-sm">
             Pelajari Lebih Lanjut
           </button>
+        </div>
+        
+        {/* Stats */}
+        <div className="flex flex-wrap justify-center gap-8 mt-16 pt-8 border-t border-white/10">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">10K+</div>
+            <div className="text-sm text-gray-400">Pengguna Aktif</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">50K+</div>
+            <div className="text-sm text-gray-400">Prediksi Dibuat</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">99%</div>
+            <div className="text-sm text-gray-400">Kepuasan User</div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2">
+          <div className="w-1 h-2 bg-white/50 rounded-full animate-pulse"></div>
         </div>
       </div>
     </div>
   );
 }
 
-// --- 2. FEATURE SECTION (Tidak ada perubahan logic, cuma visual) ---
-function FeatureSection() {
+// --- 2. FEATURES SECTION ---
+function FeaturesSection() {
   const features = [
     {
-      title: "AI Prediktif",
-      desc: "Algoritma canggih yang menganalisis jutaan data point untuk memprediksi kemungkinan skenario hidup Anda.",
-      icon: (
-        <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-      )
+      icon: <Sparkles className="w-6 h-6 text-purple-400" />,
+      title: "AI Prediksi",
+      description: "Lihat skenario kehidupan alternatif berdasarkan keputusan yang berbeda"
     },
     {
-      title: "Timeline Detail",
-      desc: "Dapatkan timeline lengkap dari perjalanan hidup alternatif Anda dengan milestone penting di setiap tahun.",
-      icon: (
-        <svg className="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
-      )
+      icon: <MessageCircleHeart className="w-6 h-6 text-pink-400" />,
+      title: "Curhat Anonim",
+      description: "Berbagi cerita dan dapatkan perspektif baru tanpa judgement"
     },
     {
-      title: "Hasil Instan",
-      desc: "Proses AI yang cepat memberikan prediksi komprehensif hanya dalam hitungan detik.",
-      icon: (
-        <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-      )
-    },
-    {
+      icon: <Shield className="w-6 h-6 text-indigo-400" />,
       title: "Privasi Terjaga",
-      desc: "Data Anda dienkripsi dan aman. Kami tidak menyimpan informasi pribadi tanpa izin Anda.",
-      icon: (
-        <svg className="w-6 h-6 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-      )
+      description: "Data Anda terenkripsi dan tidak pernah dibagikan ke pihak ketiga"
     },
     {
-      title: "Multi Dimensi",
-      desc: "Analisis mencakup karir, relasi, lifestyle, pencapaian, dan tantangan dari berbagai aspek kehidupan.",
-      icon: (
-        <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-      )
+      icon: <Brain className="w-6 h-6 text-purple-400" />,
+      title: "AI Cerdas",
+      description: "Didukung model AI terbaru untuk respons yang natural dan bermakna"
     },
     {
-      title: "Insight Mendalam",
-      desc: "Dapatkan wawasan yang actionable dan personal berdasarkan prediksi AI kami.",
-      icon: (
-        <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-      )
+      icon: <Zap className="w-6 h-6 text-yellow-400" />,
+      title: "Respon Cepat",
+      description: "Dapatkan jawaban dalam hitungan detik, kapanpun Anda butuhkan"
+    },
+    {
+      icon: <Clock className="w-6 h-6 text-green-400" />,
+      title: "Riwayat Tersimpan",
+      description: "Semua percakapan tersimpan aman dan bisa diakses kapan saja"
     }
   ];
 
   return (
-    <div className="relative z-10 py-20 px-6 md:px-20 bg-[#0f0c29]/80 backdrop-blur-md">
-      <div className="text-center mb-16">
-        <span className="px-4 py-2 rounded-full bg-purple-900/50 border border-purple-500 text-purple-300 text-sm font-semibold">
-          ✨ Fitur Unggulan
-        </span>
-        <h2 className="text-3xl md:text-4xl font-bold mt-6 mb-4">Teknologi AI Terdepan untuk Prediksi Akurat</h2>
-        <p className="text-gray-400 max-w-2xl mx-auto">
-          Menggunakan machine learning dan analisis big data untuk memberikan prediksi yang mendekati realitas kehidupan alternatif Anda.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-        {features.map((feature, idx) => (
-          <div key={idx} className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/50 hover:bg-white/10 transition-all duration-300 group">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-900 to-slate-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 border border-white/10">
-              {feature.icon}
+    <div className="relative py-24 px-6">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-950/20 to-transparent"></div>
+      
+      <div className="relative max-w-6xl mx-auto">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <span className="text-purple-400 font-medium tracking-wider uppercase text-sm">Fitur Unggulan</span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mt-4 mb-6">
+            Kenapa Memilih{' '}
+            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Paralel Life?</span>
+          </h2>
+          <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+            Platform yang dirancang untuk membantu Anda memahami diri sendiri lebih baik
+          </p>
+        </div>
+        
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature, index) => (
+            <div 
+              key={index}
+              className="group p-8 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-purple-500/50 hover:bg-white/[0.05] transition-all duration-500 hover:-translate-y-1"
+            >
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 border border-white/10">
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
+              <p className="text-gray-400 leading-relaxed">{feature.description}</p>
             </div>
-            <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
-            <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-// --- 3. CTA SECTION (Diupdate menerima prop 'onStart') ---
+// --- 3. CTA SECTION ---
 function CTASection({ onStart }) {
   return (
-    <div className="relative py-24 px-6 md:px-20">
-      <div className="max-w-6xl mx-auto rounded-3xl p-12 md:p-16 relative overflow-hidden bg-gradient-to-r from-purple-900 to-indigo-900 border border-white/10 text-center">
+    <div className="relative py-24 px-6">
+      <div className="max-w-4xl mx-auto relative">
+        {/* Glow Effects */}
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-purple-600/20 rounded-3xl blur-xl"></div>
         
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute top-10 left-10 w-4 h-4 bg-purple-400 rounded-full opacity-50 animate-pulse"></div>
-          <div className="absolute bottom-10 right-20 w-6 h-6 bg-pink-400 rounded-full opacity-30 animate-bounce"></div>
-          <div className="absolute top-1/2 right-10 w-3 h-3 bg-blue-400 rounded-full opacity-40"></div>
-        </div>
-
-        <div className="relative z-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Siap Menjelajahi Kehidupan Paralel Anda?</h2>
-          <p className="text-gray-300 mb-8 max-w-2xl mx-auto text-lg">
-            Temukan kemungkinan-kemungkinan yang menanti di jalan yang tidak Anda pilih. Mulai eksplorasi Anda sekarang dan dapatkan insight yang mengubah perspektif.
-          </p>
-          {/* TOMBOL UPDATE: Panggil onStart saat diklik */}
-          <button 
-            onClick={onStart}
-            className="px-10 py-4 rounded-full bg-white text-purple-900 font-bold text-lg hover:bg-gray-100 transition-colors shadow-xl transform hover:-translate-y-1"
-          >
-            Mulai Sekarang
-          </button>
+        <div className="relative rounded-3xl p-12 md:p-16 bg-gradient-to-br from-purple-900/80 to-indigo-900/80 border border-white/10 backdrop-blur-sm text-center overflow-hidden">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-pink-500/10 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+              Siap Menjelajahi Kehidupan
+              <span className="block mt-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Paralel Anda?
+              </span>
+            </h2>
+            <p className="text-gray-300 mb-10 max-w-xl mx-auto text-lg leading-relaxed">
+              Temukan kemungkinan-kemungkinan yang menanti di jalan yang tidak Anda pilih.
+            </p>
+            <button 
+              onClick={onStart}
+              className="group px-10 py-4 rounded-full bg-white text-purple-900 font-bold text-lg hover:bg-gray-50 transition-all duration-300 shadow-2xl shadow-purple-500/20 hover:shadow-purple-500/40 transform hover:-translate-y-1"
+            >
+              <span className="flex items-center gap-2">
+                Mulai Sekarang
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -197,36 +249,29 @@ function CTASection({ onStart }) {
 }
 
 // --- KOMPONEN UTAMA HOME ---
-// Menerima prop 'isLoggedIn' dari App.jsx
 function Home({ isLoggedIn }) {
   const navigate = useNavigate();
 
-  // Logika pengecekan Login
   const handleExploration = () => {
     if (isLoggedIn) {
-      navigate('/chat');
+      navigate('/choose');
     } else {
       navigate('/login');
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0c29] text-white font-sans relative">
-      {/* Navbar dipanggil di sini.
-        Kita oper isLoggedIn ke Navbar kalau misalnya Navbar butuh data itu (misal buat ganti tombol jadi 'Logout' atau tampilkan avatar)
-      */}
+    <div className="min-h-screen bg-[#0a0a0f] text-white font-sans relative overflow-hidden">
+      {/* Global Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-purple-950/30 via-transparent to-pink-950/20 pointer-events-none"></div>
+      
       <Navbar isLoggedIn={isLoggedIn} />
-
-      {/* Oper fungsi handleExploration ke tombol di Hero */}
       <HeroSection onStart={handleExploration} />
-      
-      <FeatureSection />
-      
-      {/* Oper fungsi handleExploration ke tombol di CTA Bawah juga biar konsisten */}
+      <FeaturesSection />
       <CTASection onStart={handleExploration} />
       
-      <footer className="py-8 text-center text-gray-500 text-sm border-t border-white/5">
-        © 2025 Paralel Life. All rights reserved.
+      <footer className="relative py-12 text-center border-t border-white/5">
+        <p className="text-gray-500 text-sm">© 2025 Paralel Life. All rights reserved.</p>
       </footer>
     </div>
   );

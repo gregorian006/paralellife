@@ -5,20 +5,26 @@ import Home from './pages/home';
 import Login from './pages/login';
 import Register from './pages/register';
 import ChatPage from './pages/ChatPage';
-import Profile from './pages/profile'; // [1] IMPORT INI
+import Profile from './pages/profile';
+import ChooseMode from './pages/ChooseMode';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (user) setIsLoggedIn(true);
+    // Cek token untuk autentikasi (bukan localStorage user lagi)
+    const token = localStorage.getItem('token');
+    if (token) setIsLoggedIn(true);
   }, []);
 
   const handleLoginSuccess = () => setIsLoggedIn(true);
   
-  // [2] Fungsi Logout buat dikirim ke halaman Profile
-  const handleLogout = () => setIsLoggedIn(false);
+  const handleLogout = () => {
+    // Hapus token dan data user
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+  };
 
   return (
     <Router>
@@ -28,11 +34,15 @@ function App() {
         <Route path="/register" element={<Register onLogin={handleLoginSuccess} />} />
         
         <Route 
+          path="/choose" 
+          element={isLoggedIn ? <ChooseMode /> : <Navigate to="/login" />} 
+        />
+        
+        <Route 
           path="/chat" 
           element={isLoggedIn ? <ChatPage /> : <Navigate to="/login" />} 
         />
 
-        {/* [3] DAFTARKAN RUTE PROFILE */}
         <Route 
           path="/profile" 
           element={isLoggedIn ? <Profile onLogout={handleLogout} /> : <Navigate to="/login" />} 
