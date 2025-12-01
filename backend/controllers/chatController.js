@@ -76,9 +76,9 @@ const createSession = async (req, res) => {
       });
     }
 
-    // Buat session baru
+    // Buat session baru (column name: mode, bukan session_type)
     const result = await pool.query(
-      `INSERT INTO chat_sessions (user_id, session_type, title) 
+      `INSERT INTO chat_sessions (user_id, mode, title) 
        VALUES ($1, $2, $3) 
        RETURNING *`,
       [userId, sessionType, sessionType === 'ramal' ? 'Sesi Ramal Baru' : 'Sesi Curhat Baru']
@@ -114,11 +114,11 @@ const getSessions = async (req, res) => {
     const params = [userId];
 
     if (type && ['ramal', 'curhat'].includes(type)) {
-      query += ' AND cs.session_type = $2';
+      query += ' AND cs.mode = $2';
       params.push(type);
     }
 
-    query += ' ORDER BY cs.updated_at DESC';
+    query += ' ORDER BY cs.created_at DESC';
 
     const result = await pool.query(query, params);
 
@@ -230,7 +230,7 @@ const sendMessage = async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: SYSTEM_PROMPTS[session.session_type]
+          content: SYSTEM_PROMPTS[session.mode]
         },
         ...chatHistory
       ],
@@ -254,14 +254,8 @@ const sendMessage = async (req, res) => {
       // Ambil 50 karakter pertama dari pesan user sebagai judul
       const title = message.substring(0, 50) + (message.length > 50 ? '...' : '');
       await pool.query(
-        'UPDATE chat_sessions SET title = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+        'UPDATE chat_sessions SET title = $1 WHERE id = $2',
         [title, sessionId]
-      );
-    } else {
-      // Update timestamp session
-      await pool.query(
-        'UPDATE chat_sessions SET updated_at = CURRENT_TIMESTAMP WHERE id = $1',
-        [sessionId]
       );
     }
 
