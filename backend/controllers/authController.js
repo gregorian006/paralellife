@@ -146,6 +146,8 @@ const login = async (req, res) => {
 const googleLogin = async (req, res) => {
   try {
     const { googleId, email, name, avatar_url } = req.body;
+    
+    console.log('Google Login attempt:', { googleId, email, name });
 
     // 1. Cari user berdasarkan google_id atau email
     let result = await pool.query(
@@ -160,10 +162,12 @@ const googleLogin = async (req, res) => {
       if (!user.google_id) {
         // User sebelumnya register manual, sekarang link dengan Google
         await pool.query(
-          `UPDATE users SET google_id = $1, avatar_url = $2, auth_provider = 'google', updated_at = CURRENT_TIMESTAMP 
+          `UPDATE users SET google_id = $1, avatar_url = $2, auth_provider = 'google' 
            WHERE id = $3`,
           [googleId, avatar_url, user.id]
         );
+        user.avatar_url = avatar_url;
+        user.auth_provider = 'google';
       }
     } else {
       // 2b. User baru - buat akun baru
