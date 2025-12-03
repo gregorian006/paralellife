@@ -102,6 +102,7 @@ const createSession = async (req, res) => {
 // ================== GET USER'S SESSIONS ==================
 const getSessions = async (req, res) => {
   try {
+    console.log('📝 getSessions called for user:', req.user.id, 'type:', req.query.type);
     const userId = req.user.id;
     const { type } = req.query; // Optional filter by type
 
@@ -120,7 +121,9 @@ const getSessions = async (req, res) => {
 
     query += ' ORDER BY cs.created_at DESC';
 
+    console.log('📝 Query:', query, 'Params:', params);
     const result = await pool.query(query, params);
+    console.log('📝 Found sessions:', result.rows.length);
 
     res.json({
       status: 'success',
@@ -128,10 +131,11 @@ const getSessions = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get Sessions Error:', error);
+    console.error('❌ Get Sessions Error:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Gagal mengambil data sessions.'
+      message: 'Gagal mengambil data sessions.',
+      error: error.message
     });
   }
 };

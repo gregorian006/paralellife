@@ -81,7 +81,7 @@ app.use((err, req, res, next) => {
 });
 
 // ================== START SERVER ==================
-app.listen(port, () => {
+const server = app.listen(port, '0.0.0.0', () => {
   console.log('');
   console.log('🌟 ================================== 🌟');
   console.log('   PARALEL LIFE SERVER STARTED!');
@@ -93,4 +93,13 @@ app.listen(port, () => {
   
   // Start cron jobs
   startCronJobs();
+});
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${port} sudah digunakan! Hentikan aplikasi lain atau ubah PORT.`);
+  } else {
+    console.error('❌ Server Error:', error);
+  }
+  process.exit(1);
 });
