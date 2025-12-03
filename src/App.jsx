@@ -7,6 +7,8 @@ import Register from './pages/register';
 import ChatPage from './pages/ChatPage';
 import Profile from './pages/profile';
 import ChooseMode from './pages/ChooseMode';
+import TimeCapsule from './pages/TimeCapsule';
+import TimeCapsule from './pages/TimeCapsule';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -46,6 +48,11 @@ function App() {
         <Route 
           path="/profile" 
           element={isLoggedIn ? <Profile onLogout={handleLogout} /> : <Navigate to="/login" />} 
+        />
+
+        <Route 
+          path="/time-capsule" 
+          element={isLoggedIn ? <TimeCapsule /> : <Navigate to="/login" />} 
         />
 
         <Route path="*" element={<Navigate to="/" />} />

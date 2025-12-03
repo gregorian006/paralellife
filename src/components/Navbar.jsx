@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, Sparkles, MessageCircleHeart } from 'lucide-react';
+import { Menu, X, User, Sparkles, MessageCircleHeart, Mail } from 'lucide-react';
 
 const Navbar = ({ isLoggedIn }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,6 +15,7 @@ const Navbar = ({ isLoggedIn }) => {
     { name: 'Beranda', path: '/', icon: null },
     { name: 'Ramal', path: '/chat?mode=ramal', icon: <Sparkles size={16} /> },
     { name: 'Curhat', path: '/chat?mode=curhat', icon: <MessageCircleHeart size={16} /> },
+    { name: 'Time Capsule', path: '/time-capsule', icon: <Mail size={16} /> },
   ];
 
   // Handle scroll effect

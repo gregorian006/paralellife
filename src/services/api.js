@@ -136,4 +136,50 @@ export const chatAPI = {
   }
 };
 
+// ================== TIME CAPSULE API ==================
+export const timeCapsuleAPI = {
+  // Buat capsule baru
+  createTimeCapsule: async (data) => {
+    const response = await api.post('/time-capsule', data);
+    return response.data;
+  },
+
+  // Ambil semua capsules
+  getTimeCapsules: async (status = null) => {
+    const url = status ? `/time-capsule?status=${status}` : '/time-capsule';
+    const response = await api.get(url);
+    return response.data;
+  },
+
+  // Ambil detail capsule
+  getTimeCapsule: async (id) => {
+    const response = await api.get(`/time-capsule/${id}`);
+    return response.data;
+  },
+
+  // Buka capsule
+  openTimeCapsule: async (id) => {
+    const response = await api.post(`/time-capsule/${id}/open`);
+    return response.data;
+  },
+
+  // Hapus capsule
+  deleteTimeCapsule: async (id) => {
+    const response = await api.delete(`/time-capsule/${id}`);
+    return response.data;
+  },
+
+  // Get notifications
+  getNotifications: async () => {
+    const response = await api.get('/time-capsule/notifications/all');
+    return response.data;
+  },
+
+  // Mark notification as read
+  markNotificationRead: async (id) => {
+    const response = await api.put(`/time-capsule/notifications/${id}/read`);
+    return response.data;
+  }
+};
+
 export default api;

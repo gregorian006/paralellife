@@ -12,7 +12,11 @@ const port = process.env.PORT || 3000;
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
 const aiRoutes = require('./routes/aiRoutes'); // Route lama (untuk backward compatibility)
+
+// Import Cron Jobs
+const { startCronJobs } = require('./services/cronJobs');
 
 // ================== MIDDLEWARE ==================
 // CORS - Izinkan frontend React mengakses API
@@ -52,6 +56,9 @@ app.use('/api/auth', authRoutes);
 // Chat routes (sessions, messages, AI)
 app.use('/api/chat', chatRoutes);
 
+// Time Capsule routes
+app.use('/api/time-capsule', timeCapsuleRoutes);
+
 // Legacy AI routes (untuk backward compatibility)
 app.use('/api/ai', aiRoutes);
 
@@ -79,6 +86,13 @@ app.listen(port, () => {
   console.log('🌟 ================================== 🌟');
   console.log('   PARALEL LIFE SERVER STARTED!');
   console.log('🌟 ================================== 🌟');
+  console.log(`📡 Server running on port ${port}`);
+  console.log(`🌐 API URL: http://localhost:${port}/api`);
+  console.log('');
+  
+  // Start cron jobs
+  startCronJobs();
+});
   console.log(`📡 Server berjalan di: http://localhost:${port}`);
   console.log(`🔗 Health Check: http://localhost:${port}/api/health`);
   console.log('');
