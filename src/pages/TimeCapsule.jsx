@@ -34,13 +34,18 @@ const TimeCapsulePage = () => {
   const handleCreateCapsule = async (e) => {
     e.preventDefault();
     try {
-      await timeCapsuleAPI.createTimeCapsule(formData);
+      console.log('Creating capsule with data:', formData);
+      const response = await timeCapsuleAPI.createTimeCapsule(formData);
+      console.log('Capsule created:', response);
+      alert('Capsule berhasil dibuat! 🎉');
       setShowModal(false);
       setFormData({ title: '', message: '', open_date: '' });
       fetchCapsules();
     } catch (error) {
       console.error('Error creating capsule:', error);
-      alert(error.response?.data?.message || 'Gagal membuat capsule');
+      console.error('Error response:', error.response);
+      const errorMessage = error.response?.data?.message || error.message || 'Gagal membuat capsule';
+      alert(`Error: ${errorMessage}`);
     }
   };
 

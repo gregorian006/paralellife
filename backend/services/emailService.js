@@ -5,24 +5,32 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Konfigurasi transporter
-// Bisa pakai Gmail, SendGrid, Mailgun, atau SMTP lainnya
-const transporter = nodemailer.createTransport({
-  service: 'gmail', // Atau ganti dengan service lain
-  auth: {
-    user: process.env.EMAIL_USER, // Email pengirim
-    pass: process.env.EMAIL_PASSWORD // App password (bukan password biasa)
-  }
-});
+// Cek apakah email credentials tersedia
+const isEmailConfigured = process.env.EMAIL_USER && process.env.EMAIL_PASSWORD;
 
-// Verify connection
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email service error:', error);
-  } else {
-    console.log('✅ Email service ready to send messages');
-  }
-});
+// Konfigurasi transporter (hanya jika credentials ada)
+let transporter = null;
+
+if (isEmailConfigured) {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD
+    }
+  });
+
+  // Verify connection
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error('❌ Email service error:', error.message);
+    } else {
+      console.log('✅ Email service ready to send messages');
+    }
+  });
+} else {
+  console.warn('⚠️  Email credentials not configured. Email notifications disabled.');
+}
 
 // Send time capsule email
 const sendTimeCapsuleEmail = async (to, userName, capsule) => {
@@ -166,6 +174,11 @@ const sendTimeCapsuleEmail = async (to, userName, capsule) => {
     `
   };
 
+  if (!isEmailConfigured || !transporter) {
+    console.warn('⚠️  Email not sent: Email service not configured');
+    return false;
+  }
+
   try {
     await transporter.sendMail(mailOptions);
     console.log(`✅ Time capsule email sent to ${to}`);
@@ -217,6 +230,11 @@ const sendReminderEmail = async (to, userName, capsule) => {
       </html>
     `
   };
+
+  if (!isEmailConfigured || !transporter) {
+    console.warn('⚠️  Reminder email not sent: Email service not configured');
+    return false;
+  }
 
   try {
     await transporter.sendMail(mailOptions);

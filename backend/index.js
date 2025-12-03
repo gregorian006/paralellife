@@ -88,12 +88,9 @@ app.listen(port, () => {
   console.log('🌟 ================================== 🌟');
   console.log(`📡 Server running on port ${port}`);
   console.log(`🌐 API URL: http://localhost:${port}/api`);
+  console.log(`🔗 Health Check: http://localhost:${port}/api/health`);
   console.log('');
   
   // Start cron jobs
   startCronJobs();
-});
-  console.log(`📡 Server berjalan di: http://localhost:${port}`);
-  console.log(`🔗 Health Check: http://localhost:${port}/api/health`);
-  console.log('');
 });
