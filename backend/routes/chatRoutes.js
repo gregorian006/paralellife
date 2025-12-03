@@ -25,4 +25,10 @@ router.post('/sessions/:sessionId/messages', chatController.sendMessage);
 // DELETE /api/chat/sessions/:sessionId - Hapus session
 router.delete('/sessions/:sessionId', chatController.deleteSession);
 
+// DELETE /api/chat/sessions/:sessionId/messages/:messageId - Hapus message
+router.delete('/sessions/:sessionId/messages/:messageId', chatController.deleteMessage);
+
+// PUT /api/chat/sessions/:sessionId/messages/:messageId - Edit message
+router.put('/sessions/:sessionId/messages/:messageId', chatController.editMessage);
+
 module.exports = router;

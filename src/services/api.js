@@ -121,6 +121,18 @@ export const chatAPI = {
   deleteSession: async (sessionId) => {
     const response = await api.delete(`/chat/sessions/${sessionId}`);
     return response.data;
+  },
+
+  // Hapus message
+  deleteMessage: async (sessionId, messageId) => {
+    const response = await api.delete(`/chat/sessions/${sessionId}/messages/${messageId}`);
+    return response.data;
+  },
+
+  // Edit message
+  editMessage: async (sessionId, messageId, content) => {
+    const response = await api.put(`/chat/sessions/${sessionId}/messages/${messageId}`, { content });
+    return response.data;
   }
 };
 

@@ -327,10 +327,116 @@ const deleteSession = async (req, res) => {
   }
 };
 
+// ================== DELETE MESSAGE ==================
+const deleteMessage = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { sessionId, messageId } = req.params;
+
+    // Pastikan session milik user
+    const sessionCheck = await pool.query(
+      'SELECT * FROM chat_sessions WHERE id = $1 AND user_id = $2',
+      [sessionId, userId]
+    );
+
+    if (sessionCheck.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Session tidak ditemukan!'
+      });
+    }
+
+    // Hapus message
+    const result = await pool.query(
+      'DELETE FROM chat_messages WHERE id = $1 AND session_id = $2 RETURNING id',
+      [messageId, sessionId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Pesan tidak ditemukan!'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Pesan berhasil dihapus!'
+    });
+
+  } catch (error) {
+    console.error('Delete Message Error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Gagal menghapus pesan.'
+    });
+  }
+};
+
+// ================== EDIT MESSAGE ==================
+const editMessage = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { sessionId, messageId } = req.params;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Konten pesan tidak boleh kosong!'
+      });
+    }
+
+    // Pastikan session milik user
+    const sessionCheck = await pool.query(
+      'SELECT * FROM chat_sessions WHERE id = $1 AND user_id = $2',
+      [sessionId, userId]
+    );
+
+    if (sessionCheck.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Session tidak ditemukan!'
+      });
+    }
+
+    // Update message (hanya user messages yang bisa diedit)
+    const result = await pool.query(
+      `UPDATE chat_messages 
+       SET content = $1 
+       WHERE id = $2 AND session_id = $3 AND role = 'user' 
+       RETURNING *`,
+      [content, messageId, sessionId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Pesan tidak ditemukan atau tidak bisa diedit!'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Pesan berhasil diupdate!',
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Edit Message Error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Gagal mengedit pesan.'
+    });
+  }
+};
+
 module.exports = {
   createSession,
   getSessions,
   getMessages,
   sendMessage,
-  deleteSession
+  deleteSession,
+  deleteMessage,
+  editMessage
 };

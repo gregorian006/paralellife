@@ -106,22 +106,6 @@ function HeroSection({ onStart }) {
             Pelajari Lebih Lanjut
           </button>
         </div>
-        
-        {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-8 mt-16 pt-8 border-t border-white/10">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">10K+</div>
-            <div className="text-sm text-gray-400">Pengguna Aktif</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">50K+</div>
-            <div className="text-sm text-gray-400">Prediksi Dibuat</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">99%</div>
-            <div className="text-sm text-gray-400">Kepuasan User</div>
-          </div>
-        </div>
       </div>
       
       {/* Scroll Indicator */}
