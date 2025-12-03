@@ -8,7 +8,6 @@ import ChatPage from './pages/ChatPage';
 import Profile from './pages/profile';
 import ChooseMode from './pages/ChooseMode';
 import TimeCapsule from './pages/TimeCapsule';
-import TimeCapsule from './pages/TimeCapsule';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
