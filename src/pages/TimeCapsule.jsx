@@ -23,9 +23,11 @@ const TimeCapsulePage = () => {
     try {
       setLoading(true);
       const response = await timeCapsuleAPI.getTimeCapsules();
-      setCapsules(response.data || []);
+      console.log('Fetch capsules response:', response);
+      setCapsules(response.data?.capsules || []);
     } catch (error) {
       console.error('Error fetching capsules:', error);
+      setCapsules([]);
     } finally {
       setLoading(false);
     }
