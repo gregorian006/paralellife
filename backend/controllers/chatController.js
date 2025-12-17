@@ -6,17 +6,10 @@ const pool = require('../config/database');
 const Groq = require('groq-sdk');
 require('dotenv').config();
 
-// Lazy-initialize Groq Client (only when needed)
-let groq;
-
-function getGroqClient() {
-  if (!groq) {
-    groq = new Groq({
-      apiKey: process.env.GROQ_API_KEY
-    });
-  }
-  return groq;
-}
+// Inisialisasi Groq Client
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
+});
 
 // ================== SYSTEM PROMPTS ==================
 // Prompt ini menentukan "kepribadian" AI untuk setiap mode
@@ -281,7 +274,7 @@ const sendMessage = async (req, res) => {
     }));
 
     // 5. Panggil Groq AI
-    const completion = await getGroqClient().chat.completions.create({
+    const completion = await groq.chat.completions.create({
       messages: [
         {
           role: 'system',
