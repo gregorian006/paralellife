@@ -19,16 +19,16 @@ router.get('/', timeCapsuleController.getCapsules);
 // GET /api/time-capsule/:id - Get detail capsule
 router.get('/:id', timeCapsuleController.getCapsule);
 
+// GET /api/time-capsule/notifications - Get notifikasi user (harus sebelum /:id)
+router.get('/notifications', timeCapsuleController.getNotifications);
+
+// PUT /api/time-capsule/notifications/:id/read - Mark sebagai dibaca
+router.put('/notifications/:id/read', timeCapsuleController.markNotificationRead);
+
 // POST /api/time-capsule/:id/open - Buka capsule
 router.post('/:id/open', timeCapsuleController.openCapsule);
 
 // DELETE /api/time-capsule/:id - Hapus capsule
 router.delete('/:id', timeCapsuleController.deleteCapsule);
-
-// GET /api/notifications - Get notifikasi user
-router.get('/notifications/all', timeCapsuleController.getNotifications);
-
-// PUT /api/notifications/:id/read - Mark sebagai dibaca
-router.put('/notifications/:id/read', timeCapsuleController.markNotificationRead);
 
 module.exports = router;

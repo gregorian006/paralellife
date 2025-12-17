@@ -1,13 +1,18 @@
 // src/components/Navbar.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, Sparkles, MessageCircleHeart, Mail } from 'lucide-react';
+import { Menu, X, User, Sparkles, MessageCircleHeart, Mail, Bell } from 'lucide-react';
+import { timeCapsuleAPI } from '../services/api';
 
 const Navbar = ({ isLoggedIn }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [userAvatar, setUserAvatar] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const notificationRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -57,6 +62,72 @@ const Navbar = ({ isLoggedIn }) => {
     };
   }, []);
 
+  // Fetch notifications when logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchNotifications();
+      // Poll notifications every 30 seconds
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isLoggedIn]);
+
+  // Close notification dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await timeCapsuleAPI.getNotifications();
+      if (response.status === 'success') {
+        setNotifications(response.data.notifications);
+        setUnreadCount(response.data.unread_count);
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    // Mark as read
+    if (!notification.is_read) {
+      try {
+        await timeCapsuleAPI.markNotificationRead(notification.id);
+        fetchNotifications(); // Refresh notifications
+      } catch (error) {
+        console.error('Failed to mark notification as read:', error);
+      }
+    }
+    
+    // Navigate to link if exists
+    if (notification.link) {
+      navigate(notification.link);
+      setShowNotifications(false);
+    }
+  };
+
+  const formatNotificationTime = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return 'Baru saja';
+    if (minutes < 60) return `${minutes} menit lalu`;
+    if (hours < 24) return `${hours} jam lalu`;
+    if (days < 7) return `${days} hari lalu`;
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  };
+
   const handleAuthClick = () => {
     if (isLoggedIn) {
       navigate('/profile');
@@ -85,7 +156,7 @@ const Navbar = ({ isLoggedIn }) => {
             onClick={() => navigate('/')}
           >
             <img 
-              className="h-10 w-auto object-contain group-hover:scale-105 transition-transform" 
+              className="h-12 w-auto object-contain group-hover:scale-105 transition-transform" 
               src="/images/logo.png" 
               alt="Paralel Life" 
             />
@@ -109,8 +180,72 @@ const Navbar = ({ isLoggedIn }) => {
             ))}
           </div>
 
-          {/* AUTH BUTTON */}
-          <div className="hidden md:block">
+          {/* NOTIFICATION & AUTH BUTTONS */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Notification Bell - only show when logged in */}
+            {isLoggedIn && (
+              <div className="relative" ref={notificationRef}>
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2.5 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-300"
+                >
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notification Dropdown */}
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-[#0a0a0f]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50">
+                    <div className="sticky top-0 bg-[#0a0a0f] border-b border-white/10 px-4 py-3">
+                      <h3 className="text-white font-semibold text-sm">Notifikasi</h3>
+                    </div>
+                    
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-8 text-center">
+                        <Bell size={32} className="mx-auto text-gray-600 mb-2" />
+                        <p className="text-gray-400 text-sm">Belum ada notifikasi</p>
+                      </div>
+                    ) : (
+                      <div className="py-2">
+                        {notifications.map((notif) => (
+                          <button
+                            key={notif.id}
+                            onClick={() => handleNotificationClick(notif)}
+                            className={`w-full px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-b-0
+                              ${notif.is_read ? 'opacity-60' : ''}`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${
+                                notif.is_read 
+                                  ? 'bg-gray-600' 
+                                  : 'bg-gradient-to-r from-purple-600 to-pink-600'
+                              }`} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-white text-sm font-medium mb-1">
+                                  {notif.title}
+                                </p>
+                                <p className="text-gray-400 text-xs mb-1 line-clamp-2">
+                                  {notif.message}
+                                </p>
+                                <p className="text-gray-500 text-xs">
+                                  {formatNotificationTime(notif.created_at)}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* AUTH BUTTON */}
             <button 
               onClick={handleAuthClick} 
               className={`px-5 py-2.5 rounded-full font-medium transition-all duration-300 text-sm flex items-center gap-2
@@ -157,7 +292,7 @@ const Navbar = ({ isLoggedIn }) => {
 
       {/* MOBILE MENU */}
       <div className={`md:hidden overflow-hidden transition-all duration-300 ${
-        isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
       }`}>
         <div className="bg-[#0a0a0f]/95 backdrop-blur-xl border-b border-white/10 px-4 py-4 space-y-2">
           {navLinks.map((link) => (
@@ -175,6 +310,47 @@ const Navbar = ({ isLoggedIn }) => {
               {link.name}
             </Link>
           ))}
+          
+          {/* Mobile Notifications - only show when logged in */}
+          {isLoggedIn && notifications.length > 0 && (
+            <div className="pt-2 border-t border-white/10 mt-2">
+              <div className="px-4 py-2 flex items-center gap-2">
+                <Bell size={16} className="text-gray-400" />
+                <span className="text-sm text-gray-400 font-medium">
+                  Notifikasi {unreadCount > 0 && `(${unreadCount})`}
+                </span>
+              </div>
+              <div className="max-h-60 overflow-y-auto space-y-1">
+                {notifications.slice(0, 5).map((notif) => (
+                  <button
+                    key={notif.id}
+                    onClick={() => {
+                      handleNotificationClick(notif);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full px-4 py-3 text-left rounded-xl hover:bg-white/5 transition-colors
+                      ${notif.is_read ? 'opacity-60' : ''}`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${
+                        notif.is_read 
+                          ? 'bg-gray-600' 
+                          : 'bg-gradient-to-r from-purple-600 to-pink-600'
+                      }`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-medium mb-1">
+                          {notif.title}
+                        </p>
+                        <p className="text-gray-400 text-xs line-clamp-1">
+                          {notif.message}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           
           <div className="pt-2 border-t border-white/10 mt-2">
             <button 

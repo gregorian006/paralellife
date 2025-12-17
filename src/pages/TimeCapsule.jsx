@@ -324,7 +324,9 @@ const TimeCapsulePage = () => {
 
             <div className="p-4 bg-white/5 rounded-lg mb-6">
               <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                {selectedCapsule.message}
+                {selectedCapsule.is_opened 
+                  ? selectedCapsule.message 
+                  : '🔒 ' + '●'.repeat(Math.min(selectedCapsule.message.length, 100))}
               </p>
             </div>
 

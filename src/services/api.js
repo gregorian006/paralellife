@@ -171,7 +171,7 @@ export const timeCapsuleAPI = {
 
   // Get notifications
   getNotifications: async () => {
-    const response = await api.get('/time-capsule/notifications/all');
+    const response = await api.get('/time-capsule/notifications');
     return response.data;
   },
 
