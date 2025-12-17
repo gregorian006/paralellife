@@ -6,10 +6,17 @@ const pool = require('../config/database');
 const Groq = require('groq-sdk');
 require('dotenv').config();
 
-// Inisialisasi Groq Client
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
+// Lazy-initialize Groq Client (only when needed)
+let groq;
+
+function getGroqClient() {
+  if (!groq) {
+    groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY
+    });
+  }
+  return groq;
+}
 
 // ================== SYSTEM PROMPTS ==================
 // Prompt ini menentukan "kepribadian" AI untuk setiap mode
@@ -59,29 +66,73 @@ STRUKTUR RESPONS:
 1. Validasi perasaan ("Aku paham perasaanmu...")
 2. Tunjukkan empati
 3. Ajukan pertanyaan untuk memahami lebih dalam (jika perlu)
-4. Berikan perspektif atau dukungan`
+4. Berikan perspektif atau dukungan`,
+
+  keputusan: `Kamu adalah AI "Paralel Life" - seorang decision analyst yang logis, bijaksana, dan membantu user membuat keputusan yang tepat.
+
+TUGAS UTAMA:
+- Bantu user menganalisis berbagai pilihan keputusan secara mendalam
+- Evaluasi pros dan cons dari setiap opsi dengan perspektif berbeda
+- Identifikasi faktor-faktor penting yang perlu dipertimbangkan
+- Berikan insights yang membantu user membuat keputusan yang informed
+
+GAYA ANALISIS:
+- Gunakan framework decision-making yang terstruktur
+- Pertimbangkan aspek finansial, emosional, karir, personal growth, relationships
+- Analisis short-term dan long-term consequences
+- Cari data points yang user sebutkan untuk analisis yang lebih akurat
+
+STRUKTUR JAWABAN untuk keputusan:
+1. 🎯 Ringkasan pilihan yang user pertanyakan
+2. ✅ Keuntungan dari setiap opsi (minimal 3 per opsi)
+3. ⚠️ Tantangan/Risiko dari setiap opsi (minimal 2 per opsi)
+4. 🔍 Faktor penting yang perlu dipikirkan:
+   - Personal values & goals
+   - Financial impact
+   - Career progression
+   - Relationship impact
+   - Personal fulfillment
+   - Long-term consequences
+5. 💡 Pertanyaan reflektif untuk membantu user menemukan jawaban sendiri
+6. 🎪 Rekomendasi based on analisis (jika diminta)
+
+GAYA BAHASA:
+- Bahasa Indonesia yang clear dan analytis
+- Gunakan emoji untuk section clarity ✨
+- Jangan menghakimi pilihan user
+- Bantu user melihat "big picture"
+- Objektif tapi tetap warm dan supportive
+
+YANG HARUS DIHINDARI:
+- Jangan mengatakan "pilihan yang benar" - semua pilihan punya konsekuensi
+- Jangan hanya fokus pada aspek finansial
+- Jangan membuat keputusan untuk user`
 };
 
 // ================== CREATE CHAT SESSION ==================
 const createSession = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { sessionType } = req.body; // 'ramal' atau 'curhat'
+    const { sessionType } = req.body; // 'ramal', 'curhat', or 'keputusan'
 
     // Validasi session type
-    if (!['ramal', 'curhat'].includes(sessionType)) {
+    if (!['ramal', 'curhat', 'keputusan'].includes(sessionType)) {
       return res.status(400).json({
         status: 'error',
-        message: 'Session type harus "ramal" atau "curhat"'
+        message: 'Session type harus "ramal", "curhat", atau "keputusan"'
       });
     }
 
     // Buat session baru (column name: mode, bukan session_type)
+    const sessionTitle = sessionType === 'ramal' ? 'Sesi Ramal Baru' : 
+                         sessionType === 'curhat' ? 'Sesi Curhat Baru' :
+                         'Sesi Decision Maker Baru';
+
     const result = await pool.query(
       `INSERT INTO chat_sessions (user_id, mode, title) 
        VALUES ($1, $2, $3) 
        RETURNING *`,
-      [userId, sessionType, sessionType === 'ramal' ? 'Sesi Ramal Baru' : 'Sesi Curhat Baru']
+      [userId, sessionType, sessionTitle]
     );
 
     res.status(201).json({
@@ -114,7 +165,7 @@ const getSessions = async (req, res) => {
     `;
     const params = [userId];
 
-    if (type && ['ramal', 'curhat'].includes(type)) {
+    if (type && ['ramal', 'curhat', 'keputusan'].includes(type)) {
       query += ' AND cs.mode = $2';
       params.push(type);
     }
@@ -230,7 +281,7 @@ const sendMessage = async (req, res) => {
     }));
 
     // 5. Panggil Groq AI
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroqClient().chat.completions.create({
       messages: [
         {
           role: 'system',
@@ -435,12 +486,54 @@ const editMessage = async (req, res) => {
   }
 };
 
+const updateSessionTitle = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { sessionId } = req.params;
+    const { title } = req.body;
+
+    if (!title || title.trim().length === 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Judul tidak boleh kosong!'
+      });
+    }
+
+    // Update title session
+    const result = await pool.query(
+      'UPDATE chat_sessions SET title = $1, updated_at = NOW() WHERE id = $2 AND user_id = $3 RETURNING id, title',
+      [title.trim(), sessionId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Session tidak ditemukan!'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Judul session berhasil diupdate!',
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Update Session Title Error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Gagal mengupdate judul session.'
+    });
+  }
+};
+
 module.exports = {
   createSession,
   getSessions,
   getMessages,
   sendMessage,
   deleteSession,
+  updateSessionTitle,
   deleteMessage,
   editMessage
 };
