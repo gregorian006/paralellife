@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, MessageCircleHeart, ArrowLeft } from 'lucide-react';
+import { Sparkles, MessageCircleHeart, ArrowLeft, BarChart3 } from 'lucide-react';
 
 const ChooseMode = () => {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ const ChooseMode = () => {
         </div>
 
         {/* Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl w-full">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
           
           {/* Card Ramal */}
           <div 
@@ -61,19 +61,19 @@ const ChooseMode = () => {
               <h2 className="text-2xl md:text-3xl font-bold mb-3 text-white group-hover:text-purple-300 transition-colors">
                 Ramal Kehidupan
               </h2>
-              <p className="text-gray-400 leading-relaxed mb-6">
-                Jelajahi kemungkinan kehidupan paralel Anda. Bayangkan jika Anda mengambil keputusan berbeda di masa lalu — apa yang akan terjadi?
+              <p className="text-gray-400 leading-relaxed mb-6 text-sm">
+                Jelajahi kemungkinan kehidupan paralel Anda. Bayangkan jika Anda mengambil keputusan berbeda di masa lalu.
               </p>
               
               {/* Features */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-purple-300">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-400"></div>
-                  <span>Prediksi kehidupan alternatif</span>
+                  <span>Prediksi alternatif</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-purple-300">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-400"></div>
-                  <span>Timeline detail & milestone</span>
+                  <span>Timeline detail</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-purple-300">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-400"></div>
@@ -83,7 +83,7 @@ const ChooseMode = () => {
               
               {/* Button */}
               <div className="mt-8 flex items-center gap-2 text-purple-400 group-hover:text-purple-300 transition-colors">
-                <span className="font-semibold">Mulai Meramal</span>
+                <span className="font-semibold text-sm">Mulai Meramal</span>
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -108,15 +108,15 @@ const ChooseMode = () => {
               <h2 className="text-2xl md:text-3xl font-bold mb-3 text-white group-hover:text-pink-300 transition-colors">
                 Ruang Curhat
               </h2>
-              <p className="text-gray-400 leading-relaxed mb-6">
-                Butuh teman untuk berbicara? AI kami siap mendengarkan ceritamu tanpa menghakimi dan memberikan perspektif baru.
+              <p className="text-gray-400 leading-relaxed mb-6 text-sm">
+                Butuh teman untuk berbicara? AI kami siap mendengarkan ceritamu tanpa menghakimi.
               </p>
               
               {/* Features */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-pink-300">
                   <div className="w-1.5 h-1.5 rounded-full bg-pink-400"></div>
-                  <span>Pendengar yang empatik</span>
+                  <span>Pendengar empatik</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-pink-300">
                   <div className="w-1.5 h-1.5 rounded-full bg-pink-400"></div>
@@ -130,7 +130,54 @@ const ChooseMode = () => {
               
               {/* Button */}
               <div className="mt-8 flex items-center gap-2 text-pink-400 group-hover:text-pink-300 transition-colors">
-                <span className="font-semibold">Mulai Curhat</span>
+                <span className="font-semibold text-sm">Mulai Curhat</span>
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Card Decision Maker */}
+          <div 
+            onClick={() => navigate('/decision-maker')}
+            className="group relative cursor-pointer"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500"></div>
+            <div className="relative bg-gradient-to-br from-[#1a1030] to-[#0d0620] border border-blue-500/30 rounded-3xl p-8 md:p-10 hover:border-blue-400/60 transition-all duration-300 hover:-translate-y-2">
+              
+              {/* Icon */}
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-500/30">
+                <BarChart3 size={36} className="text-white" />
+              </div>
+              
+              {/* Content */}
+              <h2 className="text-2xl md:text-3xl font-bold mb-3 text-white group-hover:text-blue-300 transition-colors">
+                Decision Maker
+              </h2>
+              <p className="text-gray-400 leading-relaxed mb-6 text-sm">
+                Analisis keputusan penting dengan mempertimbangkan berbagai aspek kehidupan.
+              </p>
+              
+              {/* Features */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm text-blue-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                  <span>Pro & Con analysis</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-blue-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                  <span>Multi-perspektif</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-blue-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                  <span>Keputusan informed</span>
+                </div>
+              </div>
+              
+              {/* Button */}
+              <div className="mt-8 flex items-center gap-2 text-blue-400 group-hover:text-blue-300 transition-colors">
+                <span className="font-semibold text-sm">Mulai Analisis</span>
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>

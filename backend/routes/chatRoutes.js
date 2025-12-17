@@ -25,6 +25,9 @@ router.post('/sessions/:sessionId/messages', chatController.sendMessage);
 // DELETE /api/chat/sessions/:sessionId - Hapus session
 router.delete('/sessions/:sessionId', chatController.deleteSession);
 
+// PUT /api/chat/sessions/:sessionId/title - Update judul session
+router.put('/sessions/:sessionId/title', chatController.updateSessionTitle);
+
 // DELETE /api/chat/sessions/:sessionId/messages/:messageId - Hapus message
 router.delete('/sessions/:sessionId/messages/:messageId', chatController.deleteMessage);
 

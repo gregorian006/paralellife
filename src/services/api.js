@@ -123,6 +123,12 @@ export const chatAPI = {
     return response.data;
   },
 
+  // Update judul session
+  updateSessionTitle: async (sessionId, title) => {
+    const response = await api.put(`/chat/sessions/${sessionId}/title`, { title });
+    return response.data;
+  },
+
   // Hapus message
   deleteMessage: async (sessionId, messageId) => {
     const response = await api.delete(`/chat/sessions/${sessionId}/messages/${messageId}`);

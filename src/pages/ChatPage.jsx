@@ -3,9 +3,10 @@
 // =============================================
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Send, User, Plus, MessageSquare, Sparkles, History, Trash2, X, MessageCircleHeart, Loader2, Clock, ChevronRight } from 'lucide-react'; 
+import { ArrowLeft, Send, User, Plus, MessageSquare, Sparkles, History, Trash2, X, MessageCircleHeart, Loader2, Clock, ChevronRight, Search } from 'lucide-react'; 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { chatAPI } from '../services/api';
+import { TypingAnimation } from '../components/LoadingComponents';
 
 const ChatPage = () => {
   const navigate = useNavigate();
@@ -20,9 +21,13 @@ const ChatPage = () => {
   const [loading, setLoading] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [sessions, setSessions] = useState([]);
+  const [filteredSessions, setFilteredSessions] = useState([]);
   const [showSidebar, setShowSidebar] = useState(false);
   const [loadingSession, setLoadingSession] = useState(false);
   const [userAvatar, setUserAvatar] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [editingTitleId, setEditingTitleId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState("");
 
   // Ref untuk auto-scroll
   const messagesEndRef = useRef(null);
@@ -42,6 +47,18 @@ const ChatPage = () => {
   useEffect(() => {
     loadSessions();
   }, [mode]);
+
+  // Filter sessions berdasarkan search query
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredSessions(sessions);
+    } else {
+      const filtered = sessions.filter(session =>
+        session.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredSessions(filtered);
+    }
+  }, [searchQuery, sessions]);
 
   // Auto-scroll ke bawah
   const scrollToBottom = () => {
@@ -131,6 +148,35 @@ const ChatPage = () => {
     } catch (error) {
       console.error('Error deleting session:', error);
     }
+  };
+
+  // Mulai edit judul session
+  const startEditTitle = (sessionId, currentTitle) => {
+    setEditingTitleId(sessionId);
+    setEditingTitle(currentTitle);
+  };
+
+  // Simpan judul session
+  const saveEditTitle = async (sessionId) => {
+    if (!editingTitle.trim()) return;
+    
+    try {
+      await chatAPI.updateSessionTitle(sessionId, editingTitle.trim());
+      setSessions(prev => prev.map(s => 
+        s.id === sessionId ? { ...s, title: editingTitle.trim() } : s
+      ));
+      setEditingTitleId(null);
+      setEditingTitle("");
+    } catch (error) {
+      console.error('Error updating title:', error);
+      alert('Gagal mengupdate judul');
+    }
+  };
+
+  // Batal edit judul
+  const cancelEditTitle = () => {
+    setEditingTitleId(null);
+    setEditingTitle("");
   };
 
   // ================== SEND MESSAGE ==================
@@ -280,20 +326,32 @@ const ChatPage = () => {
             <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
             {mode === 'ramal' ? 'Ramal Baru' : 'Curhat Baru'}
           </button>
+
+          {/* Search Bar */}
+          <div className="mt-4 relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" />
+            <input
+              type="text"
+              placeholder="Cari percakapan..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-white/20 focus:bg-white/10 transition-all duration-200"
+            />
+          </div>
         </div>
         
         {/* Sessions List */}
         <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
-          {sessions.length === 0 ? (
+          {filteredSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className={`p-4 rounded-2xl bg-gradient-to-br ${t.gradientLight} mb-4`}>
                 <MessageSquare size={28} className="text-gray-500" />
               </div>
-              <p className="text-gray-500 text-sm">Belum ada riwayat chat</p>
-              <p className="text-gray-600 text-xs mt-1">Mulai percakapan baru!</p>
+              <p className="text-gray-500 text-sm">{searchQuery ? 'Tidak ada hasil pencarian' : 'Belum ada riwayat chat'}</p>
+              <p className="text-gray-600 text-xs mt-1">{searchQuery ? 'Coba cari yang lain' : 'Mulai percakapan baru!'}</p>
             </div>
           ) : (
-            sessions.map(session => (
+            filteredSessions.map(session => (
               <div
                 key={session.id}
                 className={`
@@ -306,7 +364,27 @@ const ChatPage = () => {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate text-gray-200">{session.title}</p>
+                    {editingTitleId === session.id ? (
+                      <input
+                        type="text"
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEditTitle(session.id);
+                          if (e.key === 'Escape') cancelEditTitle();
+                        }}
+                        onBlur={() => saveEditTitle(session.id)}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-white/40"
+                        autoFocus
+                      />
+                    ) : (
+                      <p 
+                        className="text-sm font-medium truncate text-gray-200 cursor-text"
+                        onDoubleClick={() => startEditTitle(session.id, session.title)}
+                      >
+                        {session.title}
+                      </p>
+                    )}
                     <div className="flex items-center gap-1.5 mt-2">
                       <Clock size={12} className="text-gray-500" />
                       <p className="text-xs text-gray-500">
@@ -318,15 +396,27 @@ const ChatPage = () => {
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteSession(session.id);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-500/20 rounded-lg transition-all duration-200"
-                  >
-                    <Trash2 size={14} className="text-red-400" />
-                  </button>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditTitle(session.id, session.title);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-blue-500/20 rounded-lg transition-all duration-200"
+                      title="Edit judul"
+                    >
+                      <MessageSquare size={14} className="text-blue-400" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteSession(session.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-500/20 rounded-lg transition-all duration-200"
+                    >
+                      <Trash2 size={14} className="text-red-400" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -507,15 +597,8 @@ const ChatPage = () => {
                   <div className={`p-2 rounded-xl bg-gradient-to-br ${t.gradient} shadow-lg`}>
                     {mode === 'ramal' ? <Sparkles size={18} /> : <MessageCircleHeart size={18} />}
                   </div>
-                  <div className="bg-white/[0.08] border border-white/10 px-5 py-4 rounded-2xl rounded-bl-md">
-                    <div className="flex items-center gap-3">
-                      <Loader2 size={16} className={`${t.accent} animate-spin`} />
-                      <span className="text-gray-400 text-sm">
-                        {mode === 'ramal' 
-                          ? 'Menganalisis kemungkinan...' 
-                          : 'Menyiapkan respons...'}
-                      </span>
-                    </div>
+                  <div className="bg-white/8 border border-white/10 px-5 py-4 rounded-2xl rounded-bl-md">
+                    <TypingAnimation />
                   </div>
                 </div>
               )}
