@@ -248,7 +248,90 @@ const sendReminderEmail = async (to, userName, capsule) => {
   }
 };
 
+// Send OTP email (untuk register dan reset password)
+const sendOTPEmail = async (to, userName, otpCode, type) => {
+  const isRegister = type === 'register';
+  const mailOptions = {
+    from: `"Paralel Life" <${process.env.EMAIL_USER}>`,
+    to: to,
+    subject: isRegister ? 'Kode Verifikasi Email Anda' : 'Kode Reset Password',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 50%, #0a0a0f 100%); padding: 20px; margin: 0; }
+          .container { max-width: 600px; margin: 0 auto; background: #1a1a2e; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+          .header { background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); padding: 40px 20px; text-align: center; color: white; }
+          .header h1 { margin: 0; font-size: 28px; font-weight: bold; }
+          .content { padding: 40px; }
+          .otp-box { background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); color: white; padding: 30px; border-radius: 15px; text-align: center; margin: 30px 0; }
+          .otp-code { font-size: 48px; font-weight: bold; letter-spacing: 8px; margin: 20px 0; font-family: monospace; }
+          .message { color: #d1d5db; line-height: 1.6; margin: 20px 0; }
+          .warning { background: rgba(255, 200, 0, 0.1); border-left: 4px solid #ffc800; padding: 15px; margin: 20px 0; color: #ffc800; border-radius: 5px; }
+          .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; border-top: 1px solid rgba(255,255,255,0.1); }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>${isRegister ? '✉️ Verifikasi Email' : '🔒 Reset Password'}</h1>
+          </div>
+          
+          <div class="content">
+            <p class="message">Hai <strong>${userName}</strong>,</p>
+            <p class="message">
+              ${isRegister 
+                ? 'Terima kasih telah mendaftar di Paralel Life! Gunakan kode OTP di bawah ini untuk verifikasi email kamu:'
+                : 'Kami menerima permintaan reset password untuk akun kamu. Gunakan kode OTP di bawah ini untuk melanjutkan:'}
+            </p>
+            
+            <div class="otp-box">
+              <p style="margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;">Kode Verifikasi OTP</p>
+              <div class="otp-code">${otpCode}</div>
+              <p style="margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Berlaku selama 10 menit</p>
+            </div>
+            
+            <div class="warning">
+              ⚠️ <strong>Penting:</strong> Jangan bagikan kode ini kepada siapapun. Tim Paralel Life tidak akan pernah meminta kode OTP kamu.
+            </div>
+            
+            <p class="message">
+              ${isRegister 
+                ? 'Jika kamu tidak mendaftar di Paralel Life, abaikan email ini.'
+                : 'Jika kamu tidak meminta reset password, abaikan email ini dan pastikan akun kamu aman.'}
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p style="color: #9ca3af;">Paralel Life - Jelajahi Kemungkinan Hidupmu</p>
+            <p style="font-size: 12px; margin-top: 10px; color: #6b7280;">
+              Email otomatis, mohon tidak membalas email ini.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+
+  if (!isEmailConfigured || !transporter) {
+    console.warn('⚠️  OTP email not sent: Email service not configured');
+    return false;
+  }
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ OTP email sent to ${to} (${type})`);
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to send OTP email:', error);
+    return false;
+  }
+};
+
 module.exports = {
   sendTimeCapsuleEmail,
-  sendReminderEmail
+  sendReminderEmail,
+  sendOTPEmail
 };

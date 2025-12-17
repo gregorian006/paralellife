@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import Home from './pages/home';
 import Login from './pages/login';
 import Register from './pages/register';
+import ForgotPassword from './pages/ForgotPassword';
 import ChatPage from './pages/ChatPage';
 import Profile from './pages/profile';
 import ChooseMode from './pages/ChooseMode';
@@ -37,6 +38,7 @@ function App() {
           <Route path="/" element={<Home isLoggedIn={isLoggedIn} />} />
           <Route path="/login" element={<Login onLogin={handleLoginSuccess} />} />
           <Route path="/register" element={<Register onLogin={handleLoginSuccess} />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           
           <Route 
             path="/choose" 

@@ -96,17 +96,30 @@ const Navbar = ({ isLoggedIn }) => {
     }
   };
 
-  const handleNotificationClick = async (notification) => {
-    // Mark as read
-    if (!notification.is_read) {
-      try {
-        await timeCapsuleAPI.markNotificationRead(notification.id);
-        fetchNotifications(); // Refresh notifications
-      } catch (error) {
-        console.error('Failed to mark notification as read:', error);
-      }
-    }
+  const markAllAsRead = async () => {
+    if (unreadCount === 0) return;
     
+    try {
+      await timeCapsuleAPI.markAllNotificationsRead();
+      // Update state langsung tanpa refetch
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+    }
+  };
+
+  const handleNotificationDropdownOpen = () => {
+    const newState = !showNotifications;
+    setShowNotifications(newState);
+    
+    // Jika dropdown dibuka dan ada notif belum dibaca, mark all as read
+    if (newState && unreadCount > 0) {
+      markAllAsRead();
+    }
+  };
+
+  const handleNotificationClick = async (notification) => {
     // Navigate to link if exists
     if (notification.link) {
       navigate(notification.link);
@@ -187,12 +200,12 @@ const Navbar = ({ isLoggedIn }) => {
             {isLoggedIn && (
               <div className="relative" ref={notificationRef}>
                 <button
-                  onClick={() => setShowNotifications(!showNotifications)}
+                  onClick={handleNotificationDropdownOpen}
                   className="relative p-2.5 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-300"
                 >
                   <Bell size={20} />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-xs font-bold text-white animate-pulse">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -216,15 +229,10 @@ const Navbar = ({ isLoggedIn }) => {
                           <button
                             key={notif.id}
                             onClick={() => handleNotificationClick(notif)}
-                            className={`w-full px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-b-0
-                              ${notif.is_read ? 'opacity-60' : ''}`}
+                            className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-b-0"
                           >
                             <div className="flex items-start gap-3">
-                              <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${
-                                notif.is_read 
-                                  ? 'bg-gray-600' 
-                                  : 'bg-gradient-to-r from-purple-600 to-pink-600'
-                              }`} />
+                              <div className="mt-1 w-2 h-2 rounded-full flex-shrink-0 bg-gradient-to-r from-purple-600 to-pink-600" />
                               <div className="flex-1 min-w-0">
                                 <p className="text-white text-sm font-medium mb-1">
                                   {notif.title}
@@ -283,7 +291,14 @@ const Navbar = ({ isLoggedIn }) => {
 
           {/* MOBILE MENU BUTTON */}
           <button 
-            onClick={() => setIsOpen(!isOpen)} 
+            onClick={() => {
+              const newState = !isOpen;
+              setIsOpen(newState);
+              // Mark all as read saat mobile menu dibuka (jika ada notif)
+              if (newState && isLoggedIn && unreadCount > 0) {
+                markAllAsRead();
+              }
+            }} 
             className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -329,15 +344,10 @@ const Navbar = ({ isLoggedIn }) => {
                       handleNotificationClick(notif);
                       setIsOpen(false);
                     }}
-                    className={`w-full px-4 py-3 text-left rounded-xl hover:bg-white/5 transition-colors
-                      ${notif.is_read ? 'opacity-60' : ''}`}
+                    className="w-full px-4 py-3 text-left rounded-xl hover:bg-white/5 transition-colors"
                   >
                     <div className="flex items-start gap-2">
-                      <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${
-                        notif.is_read 
-                          ? 'bg-gray-600' 
-                          : 'bg-gradient-to-r from-purple-600 to-pink-600'
-                      }`} />
+                      <div className="mt-1 w-2 h-2 rounded-full flex-shrink-0 bg-gradient-to-r from-purple-600 to-pink-600" />
                       <div className="flex-1 min-w-0">
                         <p className="text-white text-sm font-medium mb-1">
                           {notif.title}

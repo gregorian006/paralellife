@@ -21,6 +21,8 @@ const createCapsule = async (req, res) => {
 
     // Pastikan tanggal di masa depan
     const openDate = new Date(open_date);
+    openDate.setHours(0, 0, 0, 0); // Normalize jam ke 00:00
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -39,10 +41,78 @@ const createCapsule = async (req, res) => {
       [userId, title, message, open_date]
     );
 
+    const capsule = result.rows[0];
+
+    // Hitung berapa hari sampai terbuka (dengan perhitungan yang lebih akurat)
+    const diffTime = openDate.getTime() - today.getTime();
+    const daysUntilOpen = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    console.log(`📅 Time capsule dibuat untuk: ${openDate.toLocaleDateString('id-ID')}`);
+    console.log(`📅 Hari ini: ${today.toLocaleDateString('id-ID')}`);
+    console.log(`⏱️  Hari sampai terbuka: ${daysUntilOpen} hari`);
+
+    // Buat notifikasi konfirmasi pembuatan
+    await pool.query(
+      `INSERT INTO notifications (user_id, type, title, message, link)
+       VALUES ($1, 'capsule_created', 'Time Capsule Berhasil Dibuat! ✨', $2, $3)`,
+      [
+        userId,
+        `"${title}" akan terbuka dalam ${daysUntilOpen} hari`,
+        `/time-capsule/${capsule.id}`
+      ]
+    );
+
+    // Jika capsule untuk besok, kirim reminder sekaligus
+    if (daysUntilOpen === 1) {
+      console.log(`⏰ Time capsule untuk besok terdeteksi! Mengirim reminder...`);
+      
+      // Ambil data user untuk email
+      const userResult = await pool.query(
+        'SELECT email, name FROM users WHERE id = $1',
+        [userId]
+      );
+      const user = userResult.rows[0];
+      
+      console.log(`📧 Mengirim email reminder ke: ${user.email}`);
+
+      // Kirim email reminder
+      try {
+        const emailSent = await sendReminderEmail(user.email, user.name, capsule);
+        
+        if (emailSent) {
+          console.log('✅ Email reminder berhasil dikirim!');
+          
+          // Mark reminder sebagai terkirim
+          await pool.query(
+            'UPDATE time_capsules SET reminder_sent = true WHERE id = $1',
+            [capsule.id]
+          );
+        } else {
+          console.log('⚠️  Email reminder tidak terkirim (email service mungkin tidak dikonfigurasi)');
+        }
+
+        // Buat notifikasi reminder (tetap dibuat meskipun email gagal)
+        await pool.query(
+          `INSERT INTO notifications (user_id, type, title, message, link)
+           VALUES ($1, 'capsule_reminder', 'Besok Time Capsule Terbuka! ⏰', $2, $3)`,
+          [
+            userId,
+            `"${title}" akan terbuka besok!`,
+            `/time-capsule/${capsule.id}`
+          ]
+        );
+        console.log('🔔 Notifikasi reminder dibuat');
+        
+      } catch (emailError) {
+        console.error('❌ Email reminder error:', emailError.message);
+        // Jangan gagalkan request jika email error
+      }
+    }
+
     res.status(201).json({
       status: 'success',
       message: 'Time Capsule berhasil dibuat! 🎁',
-      data: result.rows[0]
+      data: capsule
     });
 
   } catch (error) {
@@ -321,6 +391,36 @@ const markNotificationRead = async (req, res) => {
   }
 };
 
+// ================== MARK ALL NOTIFICATIONS AS READ ==================
+const markAllNotificationsRead = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `UPDATE notifications 
+       SET is_read = true 
+       WHERE user_id = $1 AND is_read = false 
+       RETURNING id`,
+      [userId]
+    );
+
+    res.json({
+      status: 'success',
+      message: `${result.rows.length} notifikasi ditandai sebagai dibaca`,
+      data: {
+        marked_count: result.rows.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Mark All Notifications Error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Gagal update notifikasi.'
+    });
+  }
+};
+
 module.exports = {
   createCapsule,
   getCapsules,
@@ -328,5 +428,6 @@ module.exports = {
   openCapsule,
   deleteCapsule,
   getNotifications,
-  markNotificationRead
+  markNotificationRead,
+  markAllNotificationsRead
 };

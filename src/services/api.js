@@ -87,6 +87,36 @@ export const authAPI = {
   removeAvatar: async () => {
     const response = await api.delete('/auth/avatar');
     return response.data;
+  },
+
+  // OTP - Kirim OTP untuk registrasi
+  sendRegisterOTP: async (name, email, password) => {
+    const response = await api.post('/auth/register/send-otp', { name, email, password });
+    return response.data;
+  },
+
+  // OTP - Verifikasi OTP registrasi
+  verifyRegisterOTP: async (email, otp) => {
+    const response = await api.post('/auth/register/verify-otp', { email, otp });
+    return response.data;
+  },
+
+  // OTP - Kirim OTP untuk forgot password
+  sendForgotPasswordOTP: async (email) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  // OTP - Reset password dengan OTP
+  resetPasswordWithOTP: async (email, otp, newPassword) => {
+    const response = await api.post('/auth/reset-password', { email, otp, newPassword });
+    return response.data;
+  },
+
+  // OTP - Resend OTP
+  resendOTP: async (email, type) => {
+    const response = await api.post('/auth/resend-otp', { email, type });
+    return response.data;
   }
 };
 
@@ -184,6 +214,12 @@ export const timeCapsuleAPI = {
   // Mark notification as read
   markNotificationRead: async (id) => {
     const response = await api.put(`/time-capsule/notifications/${id}/read`);
+    return response.data;
+  },
+
+  // Mark all notifications as read
+  markAllNotificationsRead: async () => {
+    const response = await api.put('/time-capsule/notifications/read-all');
     return response.data;
   }
 };

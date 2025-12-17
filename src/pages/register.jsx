@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { authAPI } from "../services/api";
+import { Shield, Mail } from "lucide-react";
 
 export default function Register({ onLogin }) {
   const navigate = useNavigate();
@@ -16,6 +17,9 @@ export default function Register({ onLogin }) {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [otp, setOtp] = useState("");
 
   // Fungsi biar input form-nya dinamis
   const handleChange = (e) => {
@@ -25,11 +29,12 @@ export default function Register({ onLogin }) {
     });
   };
 
-  // ================== REGISTER MANUAL ==================
+  // ================== REGISTER MANUAL - KIRIM OTP ==================
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
 
     // Validasi
     if (!formData.name || !formData.email || !formData.password) {
@@ -45,12 +50,43 @@ export default function Register({ onLogin }) {
     }
 
     try {
-      // Panggil API backend
-      const response = await authAPI.register(
+      // Kirim OTP untuk registrasi
+      const response = await authAPI.sendRegisterOTP(
         formData.name,
         formData.email,
         formData.password
       );
+
+      if (response.status === "success") {
+        setSuccess("Kode OTP telah dikirim ke email Anda!");
+        setTimeout(() => {
+          setShowOTPModal(true);
+          setSuccess("");
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Register Error:", error);
+      const message = error.response?.data?.message || "Terjadi kesalahan. Coba lagi nanti.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ================== VERIFIKASI OTP ==================
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    if (!otp || otp.length !== 6) {
+      setError("Kode OTP harus 6 digit!");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authAPI.verifyRegisterOTP(formData.email, otp);
 
       if (response.status === "success") {
         // Simpan token dan data user
@@ -60,13 +96,34 @@ export default function Register({ onLogin }) {
         // Update state di App.jsx
         if (onLogin) onLogin();
 
-        // Redirect ke chat
-        navigate("/chat");
+        setSuccess("Email berhasil diverifikasi! Selamat datang! 🎉");
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
       }
     } catch (error) {
-      console.error("Register Error:", error);
-      const message = error.response?.data?.message || "Terjadi kesalahan. Coba lagi nanti.";
+      console.error("Verify OTP Error:", error);
+      const message = error.response?.data?.message || "Kode OTP tidak valid!";
       setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ================== RESEND OTP ==================
+  const handleResendOTP = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await authAPI.resendOTP(formData.email, 'register');
+      if (response.status === 'success') {
+        setSuccess('Kode OTP baru telah dikirim!');
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (error) {
+      setError('Gagal mengirim ulang OTP.');
     } finally {
       setLoading(false);
     }
@@ -197,6 +254,91 @@ export default function Register({ onLogin }) {
           </Link>
         </p>
       </div>
+
+      {/* OTP VERIFICATION MODAL */}
+      {showOTPModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fadeIn">
+          <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-8">
+            <div className="flex items-center justify-center mb-4">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 rounded-full">
+                <Mail className="w-8 h-8 text-white" />
+              </div>
+            </div>
+
+            <h3 className="text-2xl font-bold text-white mb-2 text-center">
+              Verifikasi Email
+            </h3>
+            <p className="text-gray-300 text-sm text-center mb-6">
+              Kami telah mengirim kode OTP ke email <span className="font-semibold text-pink-400">{formData.email}</span>
+            </p>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded-lg text-red-200 text-sm text-center">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mb-4 p-3 bg-green-500/20 border border-green-500 rounded-lg text-green-200 text-sm text-center">
+                {success}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-gray-300 text-sm flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  Kode OTP (6 digit)
+                </label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setOtp(value);
+                  }}
+                  maxLength={6}
+                  className="w-full mt-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white text-center text-2xl tracking-widest font-mono placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="000000"
+                  autoFocus
+                />
+              </div>
+
+              <button
+                onClick={handleVerifyOTP}
+                disabled={loading || otp.length !== 6}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-pink-500/30 transition-all duration-300 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              >
+                {loading ? "Memverifikasi..." : "Verifikasi OTP"}
+              </button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={loading}
+                  className="text-pink-400 text-sm hover:underline disabled:opacity-50"
+                >
+                  Kirim ulang kode OTP
+                </button>
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowOTPModal(false);
+                  setOtp("");
+                  setError("");
+                  setSuccess("");
+                }}
+                disabled={loading}
+                className="w-full py-2 text-gray-400 hover:text-white transition-colors"
+              >
+                Kembali ke form
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

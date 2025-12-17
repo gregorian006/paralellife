@@ -168,7 +168,17 @@ function Login({ onLogin }) {
             {loading ? "Memverifikasi..." : "Login"}
           </button>
 
-          <p className="text-center text-gray-400 text-sm mt-3">
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="text-purple-400 text-sm hover:text-purple-300 hover:underline transition"
+            >
+              Lupa Password?
+            </button>
+          </div>
+
+          <p className="text-center text-gray-400 text-sm">
             Belum punya akun?{" "}
             <span
               onClick={() => navigate("/register")}

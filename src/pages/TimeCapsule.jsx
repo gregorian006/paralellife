@@ -9,6 +9,8 @@ const TimeCapsulePage = () => {
   const [filter, setFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [selectedCapsule, setSelectedCapsule] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [capsuleToDelete, setCapsuleToDelete] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     message: '',
@@ -39,15 +41,12 @@ const TimeCapsulePage = () => {
       console.log('Creating capsule with data:', formData);
       const response = await timeCapsuleAPI.createTimeCapsule(formData);
       console.log('Capsule created:', response);
-      alert('Capsule berhasil dibuat! 🎉');
       setShowModal(false);
       setFormData({ title: '', message: '', open_date: '' });
       fetchCapsules();
     } catch (error) {
       console.error('Error creating capsule:', error);
       console.error('Error response:', error.response);
-      const errorMessage = error.response?.data?.message || error.message || 'Gagal membuat capsule';
-      alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -56,18 +55,28 @@ const TimeCapsulePage = () => {
       await timeCapsuleAPI.openTimeCapsule(id);
       fetchCapsules();
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal membuka capsule');
+      console.error('Failed to open capsule:', error);
     }
   };
 
-  const handleDeleteCapsule = async (id) => {
-    if (window.confirm('Yakin ingin menghapus capsule ini?')) {
-      try {
-        await timeCapsuleAPI.deleteTimeCapsule(id);
-        fetchCapsules();
-      } catch (error) {
-        alert('Gagal menghapus capsule');
+  const confirmDelete = (capsule) => {
+    setCapsuleToDelete(capsule);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteCapsule = async () => {
+    if (!capsuleToDelete) return;
+    
+    try {
+      await timeCapsuleAPI.deleteTimeCapsule(capsuleToDelete.id);
+      setShowDeleteModal(false);
+      setCapsuleToDelete(null);
+      if (selectedCapsule?.id === capsuleToDelete.id) {
+        setSelectedCapsule(null);
       }
+      fetchCapsules();
+    } catch (error) {
+      console.error('Failed to delete capsule:', error);
     }
   };
 
@@ -344,14 +353,57 @@ const TimeCapsulePage = () => {
                 </button>
               )}
               <button
-                onClick={() => {
-                  handleDeleteCapsule(selectedCapsule.id);
-                  setSelectedCapsule(null);
-                }}
+                onClick={() => confirmDelete(selectedCapsule)}
                 className="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg font-medium transition-all"
               >
                 <Trash2 className="w-4 h-4" />
                 Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && capsuleToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Hapus Time Capsule?</h3>
+                <p className="text-sm text-gray-400">Tindakan ini tidak dapat dibatalkan</p>
+              </div>
+            </div>
+            
+            <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
+              <p className="text-white font-medium mb-1">{capsuleToDelete.title}</p>
+              <p className="text-sm text-gray-400">
+                Dibuat {new Date(capsuleToDelete.created_at).toLocaleDateString('id-ID', { 
+                  day: 'numeric', 
+                  month: 'short', 
+                  year: 'numeric' 
+                })}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setCapsuleToDelete(null);
+                }}
+                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-lg font-medium transition-all"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDeleteCapsule}
+                className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all"
+              >
+                Ya, Hapus
               </button>
             </div>
           </div>
