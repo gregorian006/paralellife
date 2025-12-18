@@ -10,13 +10,13 @@ const { generateToken } = require('../middleware/auth');
 // ================== REGISTER ==================
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, username, email, password } = req.body;
 
     // 1. Validasi input
-    if (!name || !email || !password) {
+    if (!name || !username || !email || !password) {
       return res.status(400).json({
         status: 'error',
-        message: 'Nama, email, dan password wajib diisi!'
+        message: 'Nama, username, email, dan password wajib diisi!'
       });
     }
 
