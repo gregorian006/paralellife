@@ -39,10 +39,10 @@ const register = async (req, res) => {
 
     // 4. Simpan user baru ke database
     const newUser = await pool.query(
-      `INSERT INTO users (name, email, password, auth_provider) 
-       VALUES ($1, $2, $3, 'local') 
-       RETURNING id, name, email, created_at`,
-      [name, email, hashedPassword]
+      `INSERT INTO users (name, username, email, password, auth_provider) 
+       VALUES ($1, $2, $3, $4, 'local') 
+       RETURNING id, name, username, email, created_at`,
+      [name, username, email, hashedPassword]
     );
 
     // 5. Buat JWT token

@@ -15,7 +15,7 @@ const sql = fs.readFileSync(sqlFile, 'utf8');
 // Konfigurasi database dari environment variables
 // Railway akan inject DATABASE_PUBLIC_URL via "railway run"
 const pool = new Pool({
-  connectionString: process.env.DATABASE_PUBLIC_URL || process.env.DATABASE_URL,
+  connectionString: 'postgresql://postgres:lLGRqawsqvsHHCmxZdcQPGJduCGtLsLH@shinkansen.proxy.rlwy.net:47438/railway',
   ssl: { rejectUnauthorized: false }
 });
 
