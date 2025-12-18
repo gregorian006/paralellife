@@ -5,7 +5,6 @@
 // File ini bertugas memverifikasi apakah user sudah login
 
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 
 // Middleware untuk proteksi route yang butuh login
 const authenticateToken = (req, res, next) => {

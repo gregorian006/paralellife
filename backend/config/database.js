@@ -4,7 +4,6 @@
 // File ini bertugas menghubungkan Express.js ke PostgreSQL
 
 const { Pool } = require('pg');
-require('dotenv').config();
 
 // Pool adalah "kolam" koneksi database
 // Kenapa pakai Pool? Karena lebih efisien - tidak perlu buka tutup koneksi setiap query

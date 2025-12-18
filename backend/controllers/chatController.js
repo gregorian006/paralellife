@@ -4,7 +4,6 @@
 
 const pool = require('../config/database');
 const Groq = require('groq-sdk');
-require('dotenv').config();
 
 // Inisialisasi Groq Client
 const groq = new Groq({

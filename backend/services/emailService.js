@@ -3,7 +3,6 @@
 // =============================================
 
 const nodemailer = require('nodemailer');
-require('dotenv').config();
 
 // Cek apakah email credentials tersedia
 const isEmailConfigured = process.env.EMAIL_USER && process.env.EMAIL_PASSWORD;
