@@ -16,7 +16,11 @@ if (isEmailConfigured) {
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD
-    }
+    },
+    // Set short timeout untuk production (5 detik)
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 5000
   });
 
   // Verify connection
@@ -320,7 +324,13 @@ const sendOTPEmail = async (to, userName, otpCode, type) => {
   }
 
   try {
-    await transporter.sendMail(mailOptions);
+    // Add timeout wrapper - max 5 seconds untuk send email
+    const sendPromise = transporter.sendMail(mailOptions);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Email timeout after 5s')), 5000)
+    );
+    
+    await Promise.race([sendPromise, timeoutPromise]);
     console.log(`✅ OTP email sent to ${to} (${type})`);
     return true;
   } catch (error) {
