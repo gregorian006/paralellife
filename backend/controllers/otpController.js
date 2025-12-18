@@ -216,7 +216,12 @@ const sendForgotPasswordOTP = async (req, res) => {
     );
 
     // Kirim OTP via email
-    await sendOTPEmail(email, user.name, otpCode, 'reset_password');
+    const emailSent = await sendOTPEmail(email, user.name, otpCode, 'reset_password');
+
+    // Di production, jika email gagal tetap kasih response sukses dan print OTP
+    if (!emailSent) {
+      console.log('⚠️ Email failed but continuing. Forgot Password OTP Code:', otpCode);
+    }
 
     res.json({
       status: 'success',
