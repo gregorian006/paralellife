@@ -225,9 +225,10 @@ const sendForgotPasswordOTP = async (req, res) => {
 
     res.json({
       status: 'success',
-      message: 'Kode OTP telah dikirim ke email Anda!',
+      message: emailSent ? 'Kode OTP telah dikirim ke email Anda!' : '⚠️ Email service bermasalah. Gunakan OTP di bawah:',
       data: {
-        expires_in: 600 // seconds
+        expires_in: 600, // seconds
+        otp: emailSent ? undefined : otpCode // Return OTP jika email gagal
       }
     });
 
@@ -375,9 +376,10 @@ const resendOTP = async (req, res) => {
 
     res.json({
       status: 'success',
-      message: 'Kode OTP baru telah dikirim!',
+      message: emailSent ? 'Kode OTP baru telah dikirim!' : '⚠️ Email service bermasalah. Gunakan OTP di bawah:',
       data: {
-        expires_in: 600
+        expires_in: 600, // seconds
+        otp: emailSent ? undefined : otpCode // Return OTP jika email gagal
       }
     });
 
