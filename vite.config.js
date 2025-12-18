@@ -8,4 +8,16 @@ export default defineConfig({
     react(),
     tailwindcss(), // 
   ],
+  build: {
+    chunkSizeWarningLimit: 1000, // Increase limit dari 500kb ke 1000kb
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor libraries untuk optimasi loading
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['lucide-react'],
+        }
+      }
+    }
+  }
 })
