@@ -8,6 +8,7 @@ import Navbar from '../components/Navbar';
 
 // --- 1. HERO SECTION ---
 function HeroSection({ onStart }) {
+  const navigate = useNavigate();
   const [init, setInit] = useState(false);
 
   useEffect(() => {
