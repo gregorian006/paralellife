@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, MessageCircleHeart, ArrowLeft, BarChart3 } from 'lucide-react';
+import { Sparkles, MessageCircleHeart, ArrowLeft, BarChart3, Mail } from 'lucide-react';
 
 const ChooseMode = () => {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ const ChooseMode = () => {
         </div>
 
         {/* Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl w-full">
           
           {/* Card Ramal */}
           <div 
@@ -178,6 +178,55 @@ const ChooseMode = () => {
               {/* Button */}
               <div className="mt-8 flex items-center gap-2 text-blue-400 group-hover:text-blue-300 transition-colors">
                 <span className="font-semibold text-sm">Mulai Analisis</span>
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Card Time Capsule */}
+          <div 
+            onClick={() => navigate('/time-capsule')}
+            className="group relative cursor-pointer"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-600 to-orange-600 rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500"></div>
+            <div className="relative bg-gradient-to-br from-[#1a1030] to-[#0d0620] border border-amber-500/30 rounded-3xl p-8 md:p-10 hover:border-amber-400/60 transition-all duration-300 hover:-translate-y-2">
+              
+              {/* Icon */}
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-amber-500/30">
+                <svg className="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              
+              {/* Content */}
+              <h2 className="text-2xl md:text-3xl font-bold mb-3 text-white group-hover:text-amber-300 transition-colors">
+                Time Capsule
+              </h2>
+              <p className="text-gray-400 leading-relaxed mb-6 text-sm">
+                Kirim pesan untuk diri Anda di masa depan. Buat kenangan yang akan terbuka nanti.
+              </p>
+              
+              {/* Features */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm text-amber-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                  <span>Pesan masa depan</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-amber-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                  <span>Email reminder</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-amber-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                  <span>Kenangan abadi</span>
+                </div>
+              </div>
+              
+              {/* Button */}
+              <div className="mt-8 flex items-center gap-2 text-amber-400 group-hover:text-amber-300 transition-colors">
+                <span className="font-semibold text-sm">Buat Capsule</span>
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>

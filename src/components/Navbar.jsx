@@ -20,6 +20,7 @@ const Navbar = ({ isLoggedIn }) => {
     { name: 'Beranda', path: '/', icon: null },
     { name: 'Ramal', path: '/chat?mode=ramal', icon: <Sparkles size={16} /> },
     { name: 'Curhat', path: '/chat?mode=curhat', icon: <MessageCircleHeart size={16} /> },
+    { name: 'Decision Maker', path: '/decision-maker', icon: <BarChart3 size={16} /> },
     { name: 'Dashboard', path: '/dashboard', icon: <BarChart3 size={16} /> },
     { name: 'Time Capsule', path: '/time-capsule', icon: <Mail size={16} /> },
   ];
