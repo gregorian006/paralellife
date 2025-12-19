@@ -102,7 +102,10 @@ function HeroSection({ onStart }) {
             </span>
           </button>
 
-          <button className="px-8 py-4 rounded-full border border-white/20 text-gray-300 font-semibold hover:bg-white/5 hover:border-white/40 hover:text-white transition-all duration-300 backdrop-blur-sm">
+          <button 
+            onClick={() => navigate('/about')}
+            className="px-8 py-4 rounded-full border border-white/20 text-gray-300 font-semibold hover:bg-white/5 hover:border-white/40 hover:text-white transition-all duration-300 backdrop-blur-sm"
+          >
             Pelajari Lebih Lanjut
           </button>
         </div>

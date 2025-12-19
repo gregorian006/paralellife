@@ -12,6 +12,7 @@ import ChooseMode from './pages/ChooseMode';
 import TimeCapsule from './pages/TimeCapsule';
 import DecisionMaker from './pages/DecisionMaker';
 import Dashboard from './pages/Dashboard';
+import About from './pages/About';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -36,6 +37,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Home isLoggedIn={isLoggedIn} />} />
+          <Route path="/about" element={<About />} />
           <Route path="/login" element={<Login onLogin={handleLoginSuccess} />} />
           <Route path="/register" element={<Register onLogin={handleLoginSuccess} />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
