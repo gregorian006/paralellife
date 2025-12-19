@@ -1,39 +1,21 @@
 // =============================================
-// EMAIL SERVICE - Nodemailer Configuration
+// EMAIL SERVICE - SendGrid Configuration
 // =============================================
 
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
-// Cek apakah email credentials tersedia
-const isEmailConfigured = process.env.EMAIL_USER && process.env.EMAIL_PASSWORD;
-
-// Konfigurasi transporter (hanya jika credentials ada)
-let transporter = null;
+// Cek apakah SendGrid API key tersedia
+const isEmailConfigured = !!process.env.SENDGRID_API_KEY;
 
 if (isEmailConfigured) {
-  transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    },
-    // Set short timeout untuk production (5 detik)
-    connectionTimeout: 5000,
-    greetingTimeout: 5000,
-    socketTimeout: 5000
-  });
-
-  // Verify connection
-  transporter.verify((error, success) => {
-    if (error) {
-      console.error('❌ Email service error:', error.message);
-    } else {
-      console.log('✅ Email service ready to send messages');
-    }
-  });
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('✅ SendGrid email service configured');
 } else {
-  console.warn('⚠️  Email credentials not configured. Email notifications disabled.');
+  console.warn('⚠️  SENDGRID_API_KEY not configured. Email notifications disabled.');
 }
+
+// Email sender - harus verified di SendGrid
+const EMAIL_FROM = process.env.EMAIL_USER || 'paralellife.noreply@gmail.com';
 
 // Send time capsule email
 const sendTimeCapsuleEmail = async (to, userName, capsule) => {
@@ -181,17 +163,24 @@ const sendTimeCapsuleEmail = async (to, userName, capsule) => {
     `
   };
 
-  if (!isEmailConfigured || !transporter) {
-    console.warn('⚠️  Email not sent: Email service not configured');
+  if (!isEmailConfigured) {
+    console.warn('⚠️  Email not sent: SendGrid not configured');
     return false;
   }
 
   try {
-    await transporter.sendMail(mailOptions);
+    const msg = {
+      to: to,
+      from: EMAIL_FROM,
+      subject: mailOptions.subject,
+      html: mailOptions.html
+    };
+    
+    await sgMail.send(msg);
     console.log(`✅ Time capsule email sent to ${to}`);
     return true;
   } catch (error) {
-    console.error('❌ Failed to send email:', error);
+    console.error('❌ Failed to send time capsule email:', error.message);
     return false;
   }
 };
@@ -236,17 +225,24 @@ const sendReminderEmail = async (to, userName, capsule) => {
     `
   };
 
-  if (!isEmailConfigured || !transporter) {
-    console.warn('⚠️  Reminder email not sent: Email service not configured');
+  if (!isEmailConfigured) {
+    console.warn('⚠️  Reminder email not sent: SendGrid not configured');
     return false;
   }
 
   try {
-    await transporter.sendMail(mailOptions);
+    const msg = {
+      to: to,
+      from: EMAIL_FROM,
+      subject: mailOptions.subject,
+      html: mailOptions.html
+    };
+    
+    await sgMail.send(msg);
     console.log(`✅ Reminder email sent to ${to}`);
     return true;
   } catch (error) {
-    console.error('❌ Failed to send reminder:', error);
+    console.error('❌ Failed to send reminder:', error.message);
     return false;
   }
 };
@@ -318,23 +314,24 @@ const sendOTPEmail = async (to, userName, otpCode, type) => {
     `
   };
 
-  if (!isEmailConfigured || !transporter) {
-    console.warn('⚠️  OTP email not sent: Email service not configured');
+  if (!isEmailConfigured) {
+    console.warn('⚠️  OTP email not sent: SendGrid not configured');
     return false;
   }
 
   try {
-    // Add timeout wrapper - max 5 seconds untuk send email
-    const sendPromise = transporter.sendMail(mailOptions);
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Email timeout after 5s')), 5000)
-    );
+    const msg = {
+      to: to,
+      from: EMAIL_FROM,
+      subject: mailOptions.subject,
+      html: mailOptions.html
+    };
     
-    await Promise.race([sendPromise, timeoutPromise]);
+    await sgMail.send(msg);
     console.log(`✅ OTP email sent to ${to} (${type})`);
     return true;
   } catch (error) {
-    console.error('❌ Failed to send OTP email:', error);
+    console.error('❌ Failed to send OTP email:', error.message);
     return false;
   }
 };
