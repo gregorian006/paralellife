@@ -75,28 +75,12 @@ const About = () => {
             <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
               Misi Kami
             </h2>
-            <p className="text-gray-300 text-lg leading-relaxed text-center mb-6">
+            <p className="text-gray-300 text-lg leading-relaxed text-center">
               Kami percaya setiap keputusan membuka pintu ke kehidupan paralel yang berbeda. 
               Paralel Life hadir untuk membantu Anda memahami pilihan-pilihan tersebut dengan 
               teknologi AI terkini, memberikan perspektif baru, dan menciptakan ruang aman untuk 
               refleksi diri.
             </p>
-            <div className="flex items-center justify-center gap-8 mt-8">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-purple-400">1000+</div>
-                <div className="text-gray-400 text-sm mt-1">Pengguna Aktif</div>
-              </div>
-              <div className="w-px h-12 bg-gray-700"></div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-pink-400">10K+</div>
-                <div className="text-gray-400 text-sm mt-1">Sesi Chat</div>
-              </div>
-              <div className="w-px h-12 bg-gray-700"></div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-blue-400">500+</div>
-                <div className="text-gray-400 text-sm mt-1">Time Capsules</div>
-              </div>
-            </div>
           </div>
         </div>
 
