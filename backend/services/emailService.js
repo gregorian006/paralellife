@@ -1,21 +1,22 @@
 // =============================================
-// EMAIL SERVICE - SendGrid Configuration
+// EMAIL SERVICE - Resend Configuration
 // =============================================
 
-const sgMail = require('@sendgrid/mail');
+const { Resend } = require('resend');
 
-// Cek apakah SendGrid API key tersedia
-const isEmailConfigured = !!process.env.SENDGRID_API_KEY;
+// Cek apakah Resend API key tersedia
+const isEmailConfigured = !!process.env.RESEND_API_KEY;
 
+let resend = null;
 if (isEmailConfigured) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  console.log('✅ SendGrid email service configured');
+  resend = new Resend(process.env.RESEND_API_KEY);
+  console.log('✅ Resend email service configured');
 } else {
-  console.warn('⚠️  SENDGRID_API_KEY not configured. Email notifications disabled.');
+  console.warn('⚠️  RESEND_API_KEY not configured. Email notifications disabled.');
 }
 
-// Email sender - harus verified di SendGrid
-const EMAIL_FROM = process.env.EMAIL_USER || 'paralellife.noreply@gmail.com';
+// Email sender - gunakan format "Name <email@domain.com>"
+const EMAIL_FROM = 'Paralel Life <onboarding@resend.dev>'; // Resend default sender untuk testing
 
 // Send time capsule email
 const sendTimeCapsuleEmail = async (to, userName, capsule) => {
@@ -163,20 +164,19 @@ const sendTimeCapsuleEmail = async (to, userName, capsule) => {
     `
   };
 
-  if (!isEmailConfigured) {
-    console.warn('⚠️  Email not sent: SendGrid not configured');
+  if (!isEmailConfigured || !resend) {
+    console.warn('⚠️  Email not sent: Resend not configured');
     return false;
   }
 
   try {
-    const msg = {
-      to: to,
+    await resend.emails.send({
       from: EMAIL_FROM,
+      to: to,
       subject: mailOptions.subject,
       html: mailOptions.html
-    };
+    });
     
-    await sgMail.send(msg);
     console.log(`✅ Time capsule email sent to ${to}`);
     return true;
   } catch (error) {
@@ -225,20 +225,19 @@ const sendReminderEmail = async (to, userName, capsule) => {
     `
   };
 
-  if (!isEmailConfigured) {
-    console.warn('⚠️  Reminder email not sent: SendGrid not configured');
+  if (!isEmailConfigured || !resend) {
+    console.warn('⚠️  Reminder email not sent: Resend not configured');
     return false;
   }
 
   try {
-    const msg = {
-      to: to,
+    await resend.emails.send({
       from: EMAIL_FROM,
+      to: to,
       subject: mailOptions.subject,
       html: mailOptions.html
-    };
+    });
     
-    await sgMail.send(msg);
     console.log(`✅ Reminder email sent to ${to}`);
     return true;
   } catch (error) {
@@ -314,20 +313,19 @@ const sendOTPEmail = async (to, userName, otpCode, type) => {
     `
   };
 
-  if (!isEmailConfigured) {
-    console.warn('⚠️  OTP email not sent: SendGrid not configured');
+  if (!isEmailConfigured || !resend) {
+    console.warn('⚠️  OTP email not sent: Resend not configured');
     return false;
   }
 
   try {
-    const msg = {
-      to: to,
+    await resend.emails.send({
       from: EMAIL_FROM,
+      to: to,
       subject: mailOptions.subject,
       html: mailOptions.html
-    };
+    });
     
-    await sgMail.send(msg);
     console.log(`✅ OTP email sent to ${to} (${type})`);
     return true;
   } catch (error) {
