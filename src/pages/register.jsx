@@ -149,7 +149,7 @@ export default function Register({ onLogin }) {
         localStorage.setItem("user", JSON.stringify(response.data.user));
 
         if (onLogin) onLogin();
-        navigate("/chat");
+        navigate("/beranda");
       }
     } catch (error) {
       console.error("Google Register Error:", error);

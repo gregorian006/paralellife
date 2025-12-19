@@ -17,7 +17,7 @@ function Login({ onLogin }) {
   // Jika sudah login → tidak boleh buka halaman login
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) navigate("/chat");
+    if (token) navigate("/beranda");
   }, [navigate]);
 
   // ================== LOGIN MANUAL ==================
@@ -44,8 +44,8 @@ function Login({ onLogin }) {
         // Update state di App.jsx
         if (onLogin) onLogin();
 
-        // Redirect ke chat
-        navigate("/chat");
+        // Redirect ke beranda
+        navigate("/beranda");
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -78,7 +78,7 @@ function Login({ onLogin }) {
         localStorage.setItem("user", JSON.stringify(response.data.user));
 
         if (onLogin) onLogin();
-        navigate("/chat");
+        navigate("/beranda");
       }
     } catch (error) {
       console.error("Google Login Error:", error);
